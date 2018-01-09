@@ -34,8 +34,13 @@ class LetStatement(private val token: Token, val name: Identifier) : Statement {
     override fun statementNode() {}
 }
 
-class Identifier(private val token: Token, val value: String) : Expression {
+class ReturnStatement(private val token: Token) : Statement {
+    lateinit var value: Expression
+    override fun tokenLiteral() = token.literal
+    override fun statementNode() {}
+}
 
+class Identifier(private val token: Token, val value: String) : Expression {
     override fun tokenLiteral() = token.literal
     override fun expressionNode() {}
 }

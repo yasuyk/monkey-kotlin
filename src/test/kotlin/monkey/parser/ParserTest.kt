@@ -1,6 +1,7 @@
 package monkey.parser
 
 import monkey.ast.LetStatement
+import monkey.ast.ReturnStatement
 import monkey.ast.Statement
 import monkey.lexer.Lexer
 import org.assertj.core.api.Assertions.assertThat
@@ -37,6 +38,29 @@ let foobar = 838383;
         assertThat(let.name.value).isEqualTo(name)
         assertThat(let.name.tokenLiteral()).isEqualTo(name)
     }
+
+    @Test
+    fun returnStatements() {
+        val input = """
+return 5;
+return 10;
+return 838383;
+"""
+        val l = Lexer.newInstance(input)
+        val p = Parser.newInstance(l)
+        val program = p.parseProgram()
+        checkParserErrors(p)
+
+        assertThat(program).isNotNull()
+        assertThat(program!!.statements).hasSize(3)
+
+        for (stmt in program.statements) {
+            assertThat(stmt).isInstanceOf(ReturnStatement::class.java)
+            val ret = stmt as ReturnStatement
+            assertThat(ret.tokenLiteral()).isEqualTo("return")
+        }
+    }
+
 
     private fun checkParserErrors(p: Parser) {
         if (p.errors.isEmpty()) {
