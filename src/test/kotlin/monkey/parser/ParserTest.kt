@@ -11,6 +11,7 @@ import monkey.ast.ReturnStatement
 import monkey.ast.Statement
 import monkey.lexer.Lexer
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Assert
 import org.junit.Test
 
 class ParserTest {
@@ -36,7 +37,7 @@ let foobar = 838383;
         }
     }
 
-    private fun testLetStatement(s: Statement, name : String) {
+    private fun testLetStatement(s: Statement, name: String) {
         assertThat(s.tokenLiteral()).isEqualTo("let")
         assertThat(s).isInstanceOf(LetStatement::class.java)
         val let = s as LetStatement
@@ -80,8 +81,7 @@ return 838383;
         val stmt = program.statements[0] as ExpressionStatement
         val ident = stmt.value as Identifier
 
-        assertThat(ident.value).isEqualTo("foobar")
-        assertThat(ident.tokenLiteral()).isEqualTo("foobar")
+        testIdentifier(ident, "foobar");
     }
 
 
@@ -125,9 +125,9 @@ return 838383;
     @Test
     fun parsingInfixExpressions() {
         data class TestData(val input: String,
-                            val left : Long,
+                            val left: Long,
                             val operator: String,
-                            val right : Long)
+                            val right: Long)
 
         val prefixTests = arrayOf(
                 TestData("5 + 5;", 5, "+", 5),
@@ -168,7 +168,7 @@ return 838383;
                 "5 > 4 == 3 < 4" to "((5 > 4) == (3 < 4))",
                 "5 < 4 != 3 > 4" to "((5 < 4) != (3 > 4))",
                 "3 + 4 * 5 == 3 * 1 + 4 * 5" to "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"
-                )
+        )
 
         for (test in prefixTests) {
             val p = Parser.newInstance(Lexer.newInstance(test.first))
@@ -179,12 +179,33 @@ return 838383;
         }
     }
 
+    fun testLiteralExpression(exp: Expression?, expected: Any) {
+        when (expected) {
+            is Int -> testIntegerLiteral(exp, expected.toLong())
+            is Long -> testIntegerLiteral(exp, expected)
+            is String -> testIdentifier(exp, expected)
+            else -> Assert.fail("")
+        }
+    }
+
+    fun testInfixExpression(exp: Expression, left: Any, operator: String, right: Any) {
+        val opExp = exp as InfixExpression
+        testLiteralExpression(opExp.left, left)
+        assertThat(opExp.operator).isEqualTo(operator)
+        testLiteralExpression(opExp.right, right)
+    }
+
     private fun testIntegerLiteral(right: Expression?, value: Long) {
         val int = right as IntegerLiteral
         assertThat(int.value).isEqualTo(value)
         assertThat(int.tokenLiteral()).isEqualTo(value.toString())
     }
 
+    private fun testIdentifier(right: Expression?, value: String) {
+        val int = right as Identifier
+        assertThat(int.value).isEqualTo(value)
+        assertThat(int.tokenLiteral()).isEqualTo(value)
+    }
 
     private fun checkParserErrors(p: Parser) {
         if (p.errors.isEmpty()) {
