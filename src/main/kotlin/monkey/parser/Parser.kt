@@ -23,11 +23,13 @@ import monkey.token.IDENT
 import monkey.token.ILLEGAL
 import monkey.token.INT
 import monkey.token.LET
+import monkey.token.LPAREN
 import monkey.token.LT
 import monkey.token.MINUS
 import monkey.token.NOT_EQ
 import monkey.token.PLUS
 import monkey.token.RETURN
+import monkey.token.RPAREN
 import monkey.token.SEMICOLON
 import monkey.token.SLASH
 import monkey.token.TRUE
@@ -86,6 +88,7 @@ class Parser private constructor(private val lexer: Lexer) {
                 registerPrefix(FALSE, ::parseBool)
                 registerPrefix(BANG, ::parsePrefixExpression)
                 registerPrefix(MINUS, ::parsePrefixExpression)
+                registerPrefix(LPAREN, ::parseGroupedExpression)
 
                 for (infix in arrayOf(PLUS, MINUS, SLASH, ASTERISK, EQ, NOT_EQ, LT, GT)) {
                     registerInfix(infix, ::parseInfixExpression)
@@ -219,6 +222,15 @@ class Parser private constructor(private val lexer: Lexer) {
         nextToken()
         val right = parseExpression(precedence)
         return InfixExpression(token, left, token.literal, right)
+    }
+
+    fun parseGroupedExpression(): Expression? {
+        nextToken()
+        val exp = parseExpression(Precedence.LOWEST)
+        if (!expectPeek(RPAREN)) {
+            return null
+        }
+        return exp
     }
 
     private fun curTokenIs(t: TokenType): Boolean = curToken.type == t

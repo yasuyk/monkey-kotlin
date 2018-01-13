@@ -195,7 +195,13 @@ return 838383;
                 "true" to "true",
                 "false" to "false",
                 "3 > 5 == false" to "((3 > 5) == false)",
-                "3 < 5 == true" to "((3 < 5) == true)"
+                "3 < 5 == true" to "((3 < 5) == true)",
+                "1 + (2 + 3) + 4" to "((1 + (2 + 3)) + 4)",
+                "(5 + 5) * 2" to "((5 + 5) * 2)",
+                "2 / (5 + 5)" to "(2 / (5 + 5))",
+                "(5 + 5) * 2 * (5 + 5)" to "(((5 + 5) * 2) * (5 + 5))",
+                "-(5 + 5)" to "(-(5 + 5))",
+                "!(true == true)" to "(!(true == true))"
         )
 
         for (test in prefixTests) {
