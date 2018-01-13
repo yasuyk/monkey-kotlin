@@ -91,6 +91,20 @@ class ExpressionStatement(private val token: Token,
     }
 }
 
+class BlockStatement(private val token: Token,
+                     val statements: List<Statement>) : Statement {
+    override fun tokenLiteral() = token.literal
+    override fun statementNode() {}
+
+    override fun string(): String {
+        return StringBuffer().also {
+            for (s in statements) {
+                it.append(s.string())
+            }
+        }.toString()
+    }
+}
+
 class Identifier(private val token: Token, val value: String) : Expression {
     override fun tokenLiteral() = token.literal
     override fun expressionNode() {}
@@ -151,3 +165,25 @@ class InfixExpression(private val token: Token,
         }.toString()
     }
 }
+
+class IfExpression(private val token: Token,
+                   val condition: Expression,
+                   val consequence: BlockStatement,
+                   val alternative: BlockStatement? = null) : Expression {
+    override fun tokenLiteral() = token.literal
+    override fun expressionNode() {}
+
+    override fun string(): String {
+        return StringBuffer().also {
+            it.append("if")
+            it.append(condition.string())
+            it.append(" ")
+            it.append(consequence.string())
+            alternative?.let { alt ->
+                it.append("else ")
+                it.append(alt.string())
+            }
+        }.toString()
+    }
+}
+

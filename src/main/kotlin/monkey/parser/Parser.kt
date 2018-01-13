@@ -1,9 +1,11 @@
 package monkey.parser
 
+import monkey.ast.BlockStatement
 import monkey.ast.Bool
 import monkey.ast.Expression
 import monkey.ast.ExpressionStatement
 import monkey.ast.Identifier
+import monkey.ast.IfExpression
 import monkey.ast.InfixExpression
 import monkey.ast.IntegerLiteral
 import monkey.ast.LetStatement
@@ -15,19 +17,23 @@ import monkey.lexer.Lexer
 import monkey.token.ASSIGN
 import monkey.token.ASTERISK
 import monkey.token.BANG
+import monkey.token.ELSE
 import monkey.token.EOF
 import monkey.token.EQ
 import monkey.token.FALSE
 import monkey.token.GT
 import monkey.token.IDENT
+import monkey.token.IF
 import monkey.token.ILLEGAL
 import monkey.token.INT
+import monkey.token.LBRACE
 import monkey.token.LET
 import monkey.token.LPAREN
 import monkey.token.LT
 import monkey.token.MINUS
 import monkey.token.NOT_EQ
 import monkey.token.PLUS
+import monkey.token.RBRACE
 import monkey.token.RETURN
 import monkey.token.RPAREN
 import monkey.token.SEMICOLON
@@ -89,6 +95,7 @@ class Parser private constructor(private val lexer: Lexer) {
                 registerPrefix(BANG, ::parsePrefixExpression)
                 registerPrefix(MINUS, ::parsePrefixExpression)
                 registerPrefix(LPAREN, ::parseGroupedExpression)
+                registerPrefix(IF, ::parseIfExpression)
 
                 for (infix in arrayOf(PLUS, MINUS, SLASH, ASTERISK, EQ, NOT_EQ, LT, GT)) {
                     registerInfix(infix, ::parseInfixExpression)
@@ -192,6 +199,26 @@ class Parser private constructor(private val lexer: Lexer) {
         return leftExp
     }
 
+    private fun parseBlockStatement(): BlockStatement {
+        val tok = curToken
+        nextToken()
+
+        val statements = mutableListOf<Statement>()
+
+        while (true) {
+            if (curTokenIs(RBRACE) || curTokenIs(EOF)) {
+                break
+            }
+
+            parseStatement()?.let {
+                statements.add(it)
+            }
+            nextToken()
+        }
+
+        return BlockStatement(tok, statements)
+    }
+
     fun parseIdentifier(): Expression {
         return Identifier(curToken, curToken.literal)
     }
@@ -231,6 +258,33 @@ class Parser private constructor(private val lexer: Lexer) {
             return null
         }
         return exp
+    }
+
+    fun parseIfExpression(): Expression? {
+        val ifToken = curToken
+        if (!expectPeek(LPAREN)) {
+            return null
+        }
+        nextToken()
+        val exp = parseExpression(Precedence.LOWEST) ?: return null
+        if (!expectPeek(RPAREN)) {
+            return null
+        }
+        if (!expectPeek(LBRACE)) {
+            return null
+        }
+        val block = parseBlockStatement()
+
+        var alt : BlockStatement? = null
+        if (peekTokenIs(ELSE)) {
+            nextToken()
+            if (!expectPeek(LBRACE)) {
+                return null
+            }
+            alt = parseBlockStatement()
+        }
+
+        return IfExpression(ifToken, exp, block, alt)
     }
 
     private fun curTokenIs(t: TokenType): Boolean = curToken.type == t

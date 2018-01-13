@@ -4,6 +4,7 @@ import monkey.ast.Bool
 import monkey.ast.Expression
 import monkey.ast.ExpressionStatement
 import monkey.ast.Identifier
+import monkey.ast.IfExpression
 import monkey.ast.InfixExpression
 import monkey.ast.IntegerLiteral
 import monkey.ast.LetStatement
@@ -123,6 +124,38 @@ return 838383;
     }
 
     @Test
+    fun ifExpression() {
+        val p = Parser.newInstance(Lexer.newInstance("if (x < y) { x }"))
+        val program = p.parseProgram()
+        checkParserErrors(p)
+        assertThat(program.statements).hasSize(1)
+        val stmt = program.statements[0] as ExpressionStatement
+        val exp = stmt.value as IfExpression
+        testInfixExpression(exp.condition, "x", "<", "y")
+        assertThat(exp.consequence.statements).hasSize(1)
+        val consequence = exp.consequence.statements[0] as ExpressionStatement
+        testIdentifier(consequence.value, "x")
+        assertThat(exp.alternative).isNull()
+    }
+
+    @Test
+    fun ifElseExpression() {
+        val p = Parser.newInstance(Lexer.newInstance("if (x < y) { x } else { y }"))
+        val program = p.parseProgram()
+        checkParserErrors(p)
+        assertThat(program.statements).hasSize(1)
+        val stmt = program.statements[0] as ExpressionStatement
+        val exp = stmt.value as IfExpression
+        assertThat(exp.consequence.statements).hasSize(1)
+        testInfixExpression(exp.condition, "x", "<", "y")
+        val consequence = exp.consequence.statements[0] as ExpressionStatement
+        testIdentifier(consequence.value, "x")
+        assertThat(exp.alternative!!.statements).hasSize(1)
+        val alternative = exp.alternative!!.statements[0] as ExpressionStatement
+        testIdentifier(alternative.value, "y")
+    }
+
+    @Test
     fun parsingPrefixExpressions() {
         val prefixTests = arrayOf(
                 Triple("!5;", "!", 5L),
@@ -213,7 +246,7 @@ return 838383;
         }
     }
 
-    fun testLiteralExpression(exp: Expression?, expected: Any) {
+    private fun testLiteralExpression(exp: Expression?, expected: Any) {
         when (expected) {
             is Int -> testIntegerLiteral(exp, expected.toLong())
             is Long -> testIntegerLiteral(exp, expected)
