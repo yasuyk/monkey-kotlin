@@ -204,3 +204,21 @@ class IfExpression(private val token: Token,
     }
 }
 
+class CallExpression(private val token: Token,
+                     val function: Expression?,
+                     val arguments: List<Expression>) : Expression {
+    override fun tokenLiteral() = token.literal
+    override fun expressionNode() {}
+
+    override fun string(): String {
+        return StringBuffer().also {
+            function?.let { func ->
+                it.append(func.string())
+            }
+            it.append("(")
+            it.append(arguments.joinToString{ exp -> exp.string() })
+            it.append(")")
+        }.toString()
+    }
+}
+

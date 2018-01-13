@@ -2,6 +2,7 @@ package monkey.parser
 
 import monkey.ast.BlockStatement
 import monkey.ast.Bool
+import monkey.ast.CallExpression
 import monkey.ast.Expression
 import monkey.ast.ExpressionStatement
 import monkey.ast.FunctionLiteral
@@ -72,7 +73,8 @@ val precedences = mapOf(
         PLUS to Precedence.SUM,
         MINUS to Precedence.SUM,
         SLASH to Precedence.PRODUCT,
-        ASTERISK to Precedence.PRODUCT
+        ASTERISK to Precedence.PRODUCT,
+        LPAREN to Precedence.CALL
 )
 
 class Parser private constructor(private val lexer: Lexer) {
@@ -105,6 +107,7 @@ class Parser private constructor(private val lexer: Lexer) {
                 for (infix in arrayOf(PLUS, MINUS, SLASH, ASTERISK, EQ, NOT_EQ, LT, GT)) {
                     registerInfix(infix, ::parseInfixExpression)
                 }
+                registerInfix(LPAREN, ::parseCallExpression)
             }
         }
     }
@@ -292,6 +295,39 @@ class Parser private constructor(private val lexer: Lexer) {
         nextToken()
         val right = parseExpression(precedence)
         return InfixExpression(token, left, token.literal, right)
+    }
+
+    fun parseCallExpression(function :Expression?): Expression? {
+        val tok = curToken
+
+        val args = parseCallArguments() ?: return null
+
+        return CallExpression(tok, function, args)
+    }
+
+    private fun parseCallArguments(): List<Expression>? {
+        val args = mutableListOf<Expression>()
+        if (peekTokenIs(RPAREN)) {
+            nextToken()
+            return args
+        }
+
+        nextToken()
+        val exp = parseExpression(Precedence.LOWEST) ?: return null
+        args.add(exp)
+
+        while (peekTokenIs(COMMA)) {
+            nextToken()
+            nextToken()
+            val arg = parseExpression(Precedence.LOWEST) ?: return null
+            args.add(arg)
+        }
+
+        if (!expectPeek(RPAREN)) {
+            return null
+        }
+
+        return args
     }
 
     fun parseGroupedExpression(): Expression? {

@@ -1,6 +1,7 @@
 package monkey.parser
 
 import monkey.ast.Bool
+import monkey.ast.CallExpression
 import monkey.ast.Expression
 import monkey.ast.ExpressionStatement
 import monkey.ast.FunctionLiteral
@@ -196,6 +197,23 @@ return 838383;
         }
     }
 
+    @Test
+    fun callExpressionParsing() {
+        val input = "add(1, 2 * 3, 4 + 5)"
+
+        val p = Parser.newInstance(Lexer.newInstance(input))
+        val program = p.parseProgram()
+        checkParserErrors(p)
+        assertThat(program.statements).hasSize(1)
+        val stmt = program.statements[0] as ExpressionStatement
+        val exp = stmt.value as CallExpression
+        testIdentifier(exp.function, "add")
+        assertThat(exp.arguments).hasSize(3)
+        testLiteralExpression(exp.arguments[0], 1)
+        testInfixExpression(exp.arguments[1], 2, "*", 3)
+        testInfixExpression(exp.arguments[2], 4, "+", 5)
+    }
+
 
     @Test
     fun parsingPrefixExpressions() {
@@ -276,7 +294,10 @@ return 838383;
                 "2 / (5 + 5)" to "(2 / (5 + 5))",
                 "(5 + 5) * 2 * (5 + 5)" to "(((5 + 5) * 2) * (5 + 5))",
                 "-(5 + 5)" to "(-(5 + 5))",
-                "!(true == true)" to "(!(true == true))"
+                "!(true == true)" to "(!(true == true))",
+                "a + add(b * c) + d" to "((a + add((b * c))) + d)",
+                "add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))" to "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))",
+                "add(a + b + c * d / f + g)" to "add((((a + b) + ((c * d) / f)) + g))"
         )
 
         for (test in prefixTests) {
