@@ -105,6 +105,13 @@ class IntegerLiteral(private val token: Token, val value: Long) : Expression {
     override fun string(): String = token.literal
 }
 
+class Bool(private val token: Token, val value: Boolean) : Expression {
+    override fun tokenLiteral() = token.literal
+    override fun expressionNode() {}
+
+    override fun string(): String = token.literal
+}
+
 class PrefixExpression(private val token: Token,
                        val operator: String,
                        val right: Expression?) : Expression {

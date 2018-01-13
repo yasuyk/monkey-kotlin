@@ -1,5 +1,6 @@
 package monkey.parser
 
+import monkey.ast.Bool
 import monkey.ast.Expression
 import monkey.ast.ExpressionStatement
 import monkey.ast.Identifier
@@ -104,10 +105,30 @@ return 838383;
     }
 
     @Test
+    fun booleanExpression() {
+        val prefixTests = arrayOf(
+                "true" to true,
+                "false" to false
+        )
+
+        for (test in prefixTests) {
+            val p = Parser.newInstance(Lexer.newInstance(test.first))
+            val program = p.parseProgram()
+            checkParserErrors(p)
+            assertThat(program.statements).hasSize(1)
+            val stmt = program.statements[0] as ExpressionStatement
+            val boolean = stmt.value as Bool
+            assertThat(boolean.value).isEqualTo(test.second)
+        }
+    }
+
+    @Test
     fun parsingPrefixExpressions() {
         val prefixTests = arrayOf(
                 Triple("!5;", "!", 5L),
-                Triple("-15;", "-", 15L)
+                Triple("-15;", "-", 15L),
+                Triple("!true;", "!", true),
+                Triple("!false;", "!", false)
         )
 
         for (test in prefixTests) {
@@ -118,16 +139,16 @@ return 838383;
             val stmt = program.statements[0] as ExpressionStatement
             val exp = stmt.value as PrefixExpression
             assertThat(exp.operator).isEqualTo(test.second)
-            testIntegerLiteral(exp.right, test.third)
+            testLiteralExpression(exp.right, test.third)
         }
     }
 
     @Test
     fun parsingInfixExpressions() {
         data class TestData(val input: String,
-                            val left: Long,
+                            val left: Any,
                             val operator: String,
-                            val right: Long)
+                            val right: Any)
 
         val prefixTests = arrayOf(
                 TestData("5 + 5;", 5, "+", 5),
@@ -137,7 +158,10 @@ return 838383;
                 TestData("5 > 5;", 5, ">", 5),
                 TestData("5 < 5;", 5, "<", 5),
                 TestData("5 == 5;", 5, "==", 5),
-                TestData("5 != 5;", 5, "!=", 5)
+                TestData("5 != 5;", 5, "!=", 5),
+                TestData("true == true", true, "==", true),
+                TestData("true != false", true, "!=", false),
+                TestData("false == false", false, "==", false)
         )
 
         for (test in prefixTests) {
@@ -147,9 +171,9 @@ return 838383;
             assertThat(program.statements).hasSize(1)
             val stmt = program.statements[0] as ExpressionStatement
             val exp = stmt.value as InfixExpression
-            testIntegerLiteral(exp.left, test.left)
+            testLiteralExpression(exp.left, test.left)
             assertThat(exp.operator).isEqualTo(test.operator)
-            testIntegerLiteral(exp.right, test.right)
+            testLiteralExpression(exp.right, test.right)
         }
     }
 
@@ -167,7 +191,11 @@ return 838383;
                 "3 + 4; -5 * 5" to "(3 + 4)((-5) * 5)",
                 "5 > 4 == 3 < 4" to "((5 > 4) == (3 < 4))",
                 "5 < 4 != 3 > 4" to "((5 < 4) != (3 > 4))",
-                "3 + 4 * 5 == 3 * 1 + 4 * 5" to "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"
+                "3 + 4 * 5 == 3 * 1 + 4 * 5" to "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
+                "true" to "true",
+                "false" to "false",
+                "3 > 5 == false" to "((3 > 5) == false)",
+                "3 < 5 == true" to "((3 < 5) == true)"
         )
 
         for (test in prefixTests) {
@@ -184,6 +212,7 @@ return 838383;
             is Int -> testIntegerLiteral(exp, expected.toLong())
             is Long -> testIntegerLiteral(exp, expected)
             is String -> testIdentifier(exp, expected)
+            is Boolean -> testBoolLiteral(exp, expected)
             else -> Assert.fail("")
         }
     }
@@ -195,7 +224,7 @@ return 838383;
         testLiteralExpression(opExp.right, right)
     }
 
-    private fun testIntegerLiteral(right: Expression?, value: Long) {
+    private fun testIntegerLiteral(right: Expression?, value: Any) {
         val int = right as IntegerLiteral
         assertThat(int.value).isEqualTo(value)
         assertThat(int.tokenLiteral()).isEqualTo(value.toString())
@@ -205,6 +234,12 @@ return 838383;
         val int = right as Identifier
         assertThat(int.value).isEqualTo(value)
         assertThat(int.tokenLiteral()).isEqualTo(value)
+    }
+
+    private fun testBoolLiteral(right: Expression?, value: Boolean) {
+        val boolean = right as Bool
+        assertThat(boolean.value).isEqualTo(value)
+        assertThat(boolean.tokenLiteral()).isEqualTo(value.toString())
     }
 
     private fun checkParserErrors(p: Parser) {

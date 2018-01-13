@@ -1,5 +1,6 @@
 package monkey.parser
 
+import monkey.ast.Bool
 import monkey.ast.Expression
 import monkey.ast.ExpressionStatement
 import monkey.ast.Identifier
@@ -16,6 +17,7 @@ import monkey.token.ASTERISK
 import monkey.token.BANG
 import monkey.token.EOF
 import monkey.token.EQ
+import monkey.token.FALSE
 import monkey.token.GT
 import monkey.token.IDENT
 import monkey.token.ILLEGAL
@@ -28,6 +30,7 @@ import monkey.token.PLUS
 import monkey.token.RETURN
 import monkey.token.SEMICOLON
 import monkey.token.SLASH
+import monkey.token.TRUE
 import monkey.token.Token
 import monkey.token.TokenType
 
@@ -79,6 +82,8 @@ class Parser private constructor(private val lexer: Lexer) {
 
                 registerPrefix(IDENT, ::parseIdentifier)
                 registerPrefix(INT, ::parseIntegerLiteral)
+                registerPrefix(TRUE, ::parseBool)
+                registerPrefix(FALSE, ::parseBool)
                 registerPrefix(BANG, ::parsePrefixExpression)
                 registerPrefix(MINUS, ::parsePrefixExpression)
 
@@ -195,6 +200,10 @@ class Parser private constructor(private val lexer: Lexer) {
             peekError("could not parse ${curToken.literal} as integer")
             null
         }
+    }
+
+    fun parseBool(): Expression {
+        return Bool(curToken, curTokenIs(TRUE))
     }
 
     fun parsePrefixExpression(): Expression? {
