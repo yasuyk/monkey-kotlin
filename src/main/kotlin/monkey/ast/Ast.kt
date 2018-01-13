@@ -126,6 +126,23 @@ class Bool(private val token: Token, val value: Boolean) : Expression {
     override fun string(): String = token.literal
 }
 
+class FunctionLiteral(private val token: Token,
+                      val parameters: List<Identifier>,
+                      val body: BlockStatement) : Expression {
+    override fun tokenLiteral() = token.literal
+    override fun expressionNode() {}
+
+    override fun string(): String {
+        return StringBuffer().also {
+            it.append(tokenLiteral())
+            it.append("(")
+            it.append(parameters.joinToString())
+            it.append(")")
+            it.append(body.string())
+        }.toString()
+    }
+}
+
 class PrefixExpression(private val token: Token,
                        val operator: String,
                        val right: Expression?) : Expression {

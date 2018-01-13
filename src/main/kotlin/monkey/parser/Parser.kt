@@ -4,6 +4,7 @@ import monkey.ast.BlockStatement
 import monkey.ast.Bool
 import monkey.ast.Expression
 import monkey.ast.ExpressionStatement
+import monkey.ast.FunctionLiteral
 import monkey.ast.Identifier
 import monkey.ast.IfExpression
 import monkey.ast.InfixExpression
@@ -17,10 +18,12 @@ import monkey.lexer.Lexer
 import monkey.token.ASSIGN
 import monkey.token.ASTERISK
 import monkey.token.BANG
+import monkey.token.COMMA
 import monkey.token.ELSE
 import monkey.token.EOF
 import monkey.token.EQ
 import monkey.token.FALSE
+import monkey.token.FUNCTION
 import monkey.token.GT
 import monkey.token.IDENT
 import monkey.token.IF
@@ -92,10 +95,12 @@ class Parser private constructor(private val lexer: Lexer) {
                 registerPrefix(INT, ::parseIntegerLiteral)
                 registerPrefix(TRUE, ::parseBool)
                 registerPrefix(FALSE, ::parseBool)
+                registerPrefix(FUNCTION, ::parseFunctionLiteral)
                 registerPrefix(BANG, ::parsePrefixExpression)
                 registerPrefix(MINUS, ::parsePrefixExpression)
                 registerPrefix(LPAREN, ::parseGroupedExpression)
                 registerPrefix(IF, ::parseIfExpression)
+
 
                 for (infix in arrayOf(PLUS, MINUS, SLASH, ASTERISK, EQ, NOT_EQ, LT, GT)) {
                     registerInfix(infix, ::parseInfixExpression)
@@ -234,6 +239,44 @@ class Parser private constructor(private val lexer: Lexer) {
 
     fun parseBool(): Expression {
         return Bool(curToken, curTokenIs(TRUE))
+    }
+
+    fun parseFunctionLiteral(): Expression? {
+        val token = curToken
+
+        if (!expectPeek(LPAREN)) {
+            return null
+        }
+
+        val parameters = parseFunctionParameters() ?: return null
+
+        if (!expectPeek(LBRACE)) {
+            return null
+        }
+
+        val body = parseBlockStatement()
+
+        return FunctionLiteral(token, parameters, body)
+    }
+
+    private fun parseFunctionParameters(): List<Identifier>? {
+        val identifier = mutableListOf<Identifier>()
+        if (peekTokenIs(RPAREN)) {
+            nextToken()
+            return identifier
+        }
+        nextToken()
+        identifier.add(Identifier(curToken, curToken.literal))
+        while (peekTokenIs(COMMA)) {
+            nextToken()
+            nextToken()
+            identifier.add(Identifier(curToken, curToken.literal))
+        }
+        if (!expectPeek(RPAREN)) {
+            return null
+        }
+
+        return identifier
     }
 
     fun parsePrefixExpression(): Expression? {

@@ -3,6 +3,7 @@ package monkey.parser
 import monkey.ast.Bool
 import monkey.ast.Expression
 import monkey.ast.ExpressionStatement
+import monkey.ast.FunctionLiteral
 import monkey.ast.Identifier
 import monkey.ast.IfExpression
 import monkey.ast.InfixExpression
@@ -83,7 +84,7 @@ return 838383;
         val stmt = program.statements[0] as ExpressionStatement
         val ident = stmt.value as Identifier
 
-        testIdentifier(ident, "foobar");
+        testIdentifier(ident, "foobar")
     }
 
 
@@ -154,6 +155,47 @@ return 838383;
         val alternative = exp.alternative!!.statements[0] as ExpressionStatement
         testIdentifier(alternative.value, "y")
     }
+
+    @Test
+    fun functionLiteralParsing() {
+        val input = "fn(x, y) { x + y; }"
+
+        val p = Parser.newInstance(Lexer.newInstance(input))
+        val program = p.parseProgram()
+        checkParserErrors(p)
+        assertThat(program.statements).hasSize(1)
+        val stmt = program.statements[0] as ExpressionStatement
+        val function = stmt.value as FunctionLiteral
+        assertThat(function.parameters).hasSize(2)
+        testLiteralExpression(function.parameters[0], "x")
+        testLiteralExpression(function.parameters[1], "y")
+        assertThat(function.body.statements).hasSize(1)
+        val bodyStmt = function.body.statements[0] as ExpressionStatement
+        testInfixExpression(bodyStmt.value!!, "x", "+", "y")
+    }
+
+    @Test
+    fun functionParameterParsing() {
+        val tests = arrayOf(
+                "fn() {};" to arrayOf(),
+                "fn(x) {};" to arrayOf("x"),
+                "fn(x, y, z) {};" to arrayOf("x", "y", "z")
+        )
+
+        for ((input, expectedParams) in tests) {
+            val p = Parser.newInstance(Lexer.newInstance(input))
+            val program = p.parseProgram()
+            checkParserErrors(p)
+            val stmt = program.statements[0] as ExpressionStatement
+            val function = stmt.value as FunctionLiteral
+            assertThat(function.parameters).hasSize(expectedParams.size)
+
+            for ((i, ident) in expectedParams.withIndex()) {
+                testLiteralExpression(function.parameters[i], ident)
+            }
+        }
+    }
+
 
     @Test
     fun parsingPrefixExpressions() {
@@ -256,7 +298,7 @@ return 838383;
         }
     }
 
-    fun testInfixExpression(exp: Expression, left: Any, operator: String, right: Any) {
+    private fun testInfixExpression(exp: Expression, left: Any, operator: String, right: Any) {
         val opExp = exp as InfixExpression
         testLiteralExpression(opExp.left, left)
         assertThat(opExp.operator).isEqualTo(operator)
