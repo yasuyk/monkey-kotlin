@@ -1,5 +1,6 @@
 package monkey.repl
 
+import evaluator.eval
 import monkey.lexer.Lexer
 import monkey.parser.Parser
 import java.io.File
@@ -9,17 +10,16 @@ import java.io.OutputStream
 import java.util.*
 
 
-
 const val PROMPT = ">> "
 
 class Repl {
 
-   private val monkeyFace: String by lazy {
-       val classLoader = javaClass.classLoader
-       val file = File(classLoader.getResource("monkey_face.txt").file)
-       val monkeyFaceInput = FileInputStream(file)
-       monkeyFaceInput.bufferedReader().use { it.readText() }
-   }
+    private val monkeyFace: String by lazy {
+        val classLoader = javaClass.classLoader
+        val file = File(classLoader.getResource("monkey_face.txt").file)
+        val monkeyFaceInput = FileInputStream(file)
+        monkeyFaceInput.bufferedReader().use { it.readText() }
+    }
 
     fun start(input: InputStream, output: OutputStream) {
         val scanner = Scanner(input)
@@ -37,8 +37,12 @@ class Repl {
                 continue
             }
 
-            output.write(program.string())
-            output.write("\n")
+            val evaluated = eval(program)
+            if (evaluated != null) {
+                output.write(evaluated.inspect())
+                output.write("\n")
+            }
+
         }
     }
 

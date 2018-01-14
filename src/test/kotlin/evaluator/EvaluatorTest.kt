@@ -10,7 +10,7 @@ import org.junit.Test
 class EvaluatorTest {
 
     @Test
-    fun evalIntegerExpression(){
+    fun evalIntegerExpression() {
         val tests = arrayOf(
                 "5" to 5L,
                 "10" to 10L
