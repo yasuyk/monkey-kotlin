@@ -7,6 +7,7 @@ import monkey.`object`.Object
 import monkey.`object`.ObjectType
 import monkey.ast.Bool
 import monkey.ast.ExpressionStatement
+import monkey.ast.InfixExpression
 import monkey.ast.IntegerLiteral
 import monkey.ast.Node
 import monkey.ast.PrefixExpression
@@ -23,6 +24,9 @@ fun eval(node: Node?): Object? {
         is Program -> evalStatements(node.statements)
         is ExpressionStatement -> eval(node.value)
         is PrefixExpression -> evalPrefixExpression(node.operator, eval(node.right))
+        is InfixExpression -> {
+            evalInfixExpression(node.operator, eval(node.left), eval(node.right))
+        }
         is IntegerLiteral -> Integer(node.value)
         is Bool -> nativeBoolToBooleanObject(node.value)
         else -> null
@@ -65,3 +69,29 @@ fun evalMinusPrefixOperatorExpression(right: Object?): Object? {
     return Integer(-int.value)
 }
 
+fun evalInfixExpression(operator: String, left: Object?, right: Object?): Object? {
+    if (left?.type() == ObjectType.INTEGER && right?.type() == ObjectType.INTEGER) {
+        return evalIntegerInfixExpression(operator, left, right)
+    }
+    return when (operator) {
+        "==" -> nativeBoolToBooleanObject(left == right)
+        "!=" -> nativeBoolToBooleanObject(left != right)
+        else -> NULL
+    }
+}
+
+fun evalIntegerInfixExpression(operator: String, left: Object, right: Object): Object? {
+    val leftVal = left as Integer
+    val rightVal = right as Integer
+    return when (operator) {
+        "+" -> Integer(leftVal.value + rightVal.value)
+        "-" -> Integer(leftVal.value - rightVal.value)
+        "*" -> Integer(leftVal.value * rightVal.value)
+        "/" -> Integer(leftVal.value / rightVal.value)
+        "<" -> nativeBoolToBooleanObject(leftVal.value < rightVal.value)
+        ">" -> nativeBoolToBooleanObject(leftVal.value > rightVal.value)
+        "==" -> nativeBoolToBooleanObject(leftVal.value == rightVal.value)
+        "!=" -> nativeBoolToBooleanObject(leftVal.value != rightVal.value)
+        else -> NULL
+    }
+}
