@@ -1,5 +1,6 @@
 package evaluator
 
+import monkey.`object`.Boolean
 import monkey.`object`.Integer
 import monkey.`object`.Object
 import monkey.lexer.Lexer
@@ -22,11 +23,30 @@ class EvaluatorTest {
         }
     }
 
+    @Test
+    fun evalBooleanExpression() {
+        val tests = arrayOf(
+                "true" to true,
+                "false" to false
+        )
+
+        for ((input, expected) in tests) {
+            val evaluated = testEval(input)
+            testBooleanObject(evaluated, expected)
+        }
+    }
+
+
     private fun testEval(input: String)
             = eval(Parser.newInstance(Lexer.newInstance(input)).parseProgram())
 
     private fun testIntegerObject(obj: Object?, expected: Long) {
         val result = obj as Integer
+        assertThat(result.value).isEqualTo(expected)
+    }
+
+    private fun testBooleanObject(obj: Object?, expected: kotlin.Boolean) {
+        val result = obj as Boolean
         assertThat(result.value).isEqualTo(expected)
     }
 
