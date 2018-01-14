@@ -15,10 +15,10 @@ interface Expression : Node {
     fun expressionNode()
 }
 
-class Program(val statements: ArrayList<Statement> = arrayListOf()) : Node {
+class Program(val statements: MutableList<Statement> = mutableListOf()) : Node {
 
     override fun tokenLiteral(): String {
-        return if (statements.size > 0) {
+        return if (statements.isNotEmpty()) {
             statements[0].tokenLiteral()
         } else {
             ""

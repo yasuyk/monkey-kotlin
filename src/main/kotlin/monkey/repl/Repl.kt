@@ -1,27 +1,54 @@
 package monkey.repl
 
 import monkey.lexer.Lexer
-import monkey.token.EOF
+import monkey.parser.Parser
+import java.io.File
+import java.io.FileInputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.*
 
+
+
 const val PROMPT = ">> "
 
-fun start(input : InputStream, output : OutputStream) {
-	val scanner = Scanner(input)
+class Repl {
 
-    while (true) {
-        print(PROMPT)
+   private val monkeyFace: String by lazy {
+       val classLoader = javaClass.classLoader
+       val file = File(classLoader.getResource("monkey_face.txt").file)
+       val monkeyFaceInput = FileInputStream(file)
+       monkeyFaceInput.bufferedReader().use { it.readText() }
+   }
 
-		val line = scanner.nextLine()
-		val l = Lexer.newInstance(line)
+    fun start(input: InputStream, output: OutputStream) {
+        val scanner = Scanner(input)
 
-        do {
-            val tok = l.nextToken()
-            if (tok.type != EOF) {
-                println("$tok")
+        while (true) {
+            print(PROMPT)
+
+            val line = scanner.nextLine()
+            val l = Lexer.newInstance(line)
+            val p = Parser.newInstance(l)
+            val program = p.parseProgram()
+
+            if (p.errors.isNotEmpty()) {
+                printParserErrors(output, p.errors)
+                continue
             }
-        } while (tok.type != EOF)
-	}
+
+            output.write(program.string().toByteArray())
+            output.write("\n".toByteArray())
+        }
+    }
+
+
+    private fun printParserErrors(output: OutputStream, errors: List<String>) {
+        output.write(monkeyFace.toByteArray())
+        output.write("Woops! We ran into some monkey business here!\n".toByteArray())
+        output.write(" parser errors:\n".toByteArray())
+        for (msg in errors) {
+            output.write("\t$msg\n".toByteArray())
+        }
+    }
 }
