@@ -5,6 +5,7 @@ import monkey.`object`.Integer
 import monkey.`object`.Null
 import monkey.`object`.Object
 import monkey.`object`.ObjectType
+import monkey.`object`.ReturnValue
 import monkey.ast.BlockStatement
 import monkey.ast.Bool
 import monkey.ast.ExpressionStatement
@@ -14,7 +15,7 @@ import monkey.ast.IntegerLiteral
 import monkey.ast.Node
 import monkey.ast.PrefixExpression
 import monkey.ast.Program
-import monkey.ast.Statement
+import monkey.ast.ReturnStatement
 
 
 val TRUE = Boolean(true)
@@ -23,9 +24,10 @@ val NULL = Null()
 
 fun eval(node: Node?): Object? {
     return when (node) {
-        is Program -> evalStatements(node.statements)
+        is Program -> evalProgram(node)
         is ExpressionStatement -> eval(node.value)
-        is BlockStatement -> evalStatements(node.statements)
+        is BlockStatement -> evalBlockStatement(node)
+        is ReturnStatement -> ReturnValue(eval(node.value))
         is PrefixExpression -> evalPrefixExpression(node.operator, eval(node.right))
         is InfixExpression -> {
             evalInfixExpression(node.operator, eval(node.left), eval(node.right))
@@ -38,10 +40,13 @@ fun eval(node: Node?): Object? {
 }
 
 
-private fun evalStatements(statements: List<Statement>): Object? {
+private fun evalProgram(program : Program): Object? {
     var result: Object? = null
-    for (stmt in statements) {
+    for (stmt in program.statements) {
         result = eval(stmt)
+        if (result is ReturnValue) {
+            return result.value
+        }
     }
     return result
 }
@@ -119,3 +124,14 @@ fun isTruthy(condition: Object?): kotlin.Boolean {
     }
 }
 
+fun evalBlockStatement(block: BlockStatement): Object? {
+    var result: Object? = null
+    for (stmt in block.statements) {
+        result = eval(stmt)
+        if (result?.type() == ObjectType.RETURN_VALUE) {
+            return result
+        }
+    }
+    return result
+
+}

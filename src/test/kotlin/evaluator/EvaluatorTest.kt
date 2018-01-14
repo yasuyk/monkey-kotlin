@@ -104,6 +104,31 @@ class EvaluatorTest {
         }
     }
 
+    @Test
+    fun returnStatements() {
+        val tests = arrayOf(
+                "return 10;" to 10,
+                "return 10; 9;" to 10,
+                "return 2 * 5; 9;" to 10,
+                "9; return 2 * 5; 9;" to 10,
+                "if (10 > 1) { return 10; }" to 10,
+                """
+if (10 > 1) {
+  if (10 > 1) {
+    return 10;
+  }
+
+  return 1;
+}
+""" to	10
+        )
+        for ((input, expected) in tests) {
+            val evaluated = testEval(input)
+            testIntegerObject(evaluated, expected.toLong())
+        }
+    }
+
+
     private fun testEval(input: String)
             = eval(Parser.newInstance(Lexer.newInstance(input)).parseProgram())
 

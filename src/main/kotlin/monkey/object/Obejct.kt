@@ -1,9 +1,10 @@
 package monkey.`object`
 
-enum class ObjectType(@Suppress("UNUSED_PARAMETER") type: String) {
-    INTEGER("INTEGER"),
-    BOOLEAN("BOOLEAN"),
-    NULL("NULL"),
+enum class ObjectType {
+    INTEGER,
+    BOOLEAN,
+    NULL,
+    RETURN_VALUE,
 }
 
 
@@ -25,4 +26,9 @@ class Boolean(val value: kotlin.Boolean) : Object {
 class Null : Object {
     override fun type() = ObjectType.NULL
     override fun inspect() = "null"
+}
+
+class ReturnValue(val value: Object?) : Object {
+    override fun type() = ObjectType.RETURN_VALUE
+    override fun inspect() = value?.inspect() ?: ""
 }
