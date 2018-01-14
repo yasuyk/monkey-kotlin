@@ -2,6 +2,7 @@ package evaluator
 
 import monkey.`object`.Boolean
 import monkey.`object`.Integer
+import monkey.`object`.Null
 import monkey.`object`.Object
 import monkey.ast.Bool
 import monkey.ast.ExpressionStatement
@@ -13,6 +14,7 @@ import monkey.ast.Statement
 
 val TRUE = Boolean(true)
 val FALSE = Boolean(false)
+val NULL = Null()
 
 fun eval(node: Node?): Object? {
     return when (node) {
