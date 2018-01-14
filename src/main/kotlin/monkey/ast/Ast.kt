@@ -38,7 +38,7 @@ class Program(val statements: ArrayList<Statement> = arrayListOf()) : Node {
 
 class LetStatement(private val token: Token,
                    val name: Identifier,
-                   val value: Expression? = null) : Statement {
+                   val value: Expression) : Statement {
 
     override fun tokenLiteral() = token.literal
 
@@ -49,17 +49,15 @@ class LetStatement(private val token: Token,
             it.append(tokenLiteral() + " ")
             it.append(name.string())
             it.append(" = ")
-            if (value != null) {
-                it.append(value.string())
-            }
+            it.append(value.string())
             it.append(";")
         }.toString()
     }
 }
 
-class ReturnStatement(private val token: Token) : Statement {
+class ReturnStatement(private val token: Token,
+                      val value: Expression) : Statement {
 
-    lateinit var value: Expression
     override fun tokenLiteral() = token.literal
 
     override fun statementNode() {}
@@ -67,9 +65,7 @@ class ReturnStatement(private val token: Token) : Statement {
     override fun string(): String {
         return StringBuffer().also {
             it.append(tokenLiteral() + " ")
-            if (value != null) {
-                it.append(value.string())
-            }
+            it.append(value.string())
             it.append(";")
         }.toString()
     }

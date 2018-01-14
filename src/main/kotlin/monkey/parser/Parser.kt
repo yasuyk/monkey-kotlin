@@ -152,29 +152,28 @@ class Parser private constructor(private val lexer: Lexer) {
             return null
         }
 
-        //TODO: We're skipping the expressions until we encounter a semicolon
-        while (true) {
-            if (curTokenIs(SEMICOLON)) {
-                break
-            }
+        nextToken()
+
+        val exp = parseExpression(Precedence.LOWEST) ?: return null
+
+        if (peekTokenIs(SEMICOLON)) {
             nextToken()
         }
 
-        return LetStatement(token, identifier)
+        return LetStatement(token, identifier, exp)
     }
 
     private fun parseReturnStatement(): ReturnStatement? {
-        val stmt = ReturnStatement(curToken)
+        val tok = curToken
+
         nextToken()
 
-        //TODO: We're skipping the expressions until we encounter a semicolon
-        while (true) {
-            if (curTokenIs(SEMICOLON)) {
-                break
-            }
+        val exp = parseExpression(Precedence.LOWEST) ?: return null
+
+        if (peekTokenIs(SEMICOLON)) {
             nextToken()
         }
-        return stmt
+        return ReturnStatement(tok, exp)
     }
 
     private fun parseExpressionStatement(): ExpressionStatement? {

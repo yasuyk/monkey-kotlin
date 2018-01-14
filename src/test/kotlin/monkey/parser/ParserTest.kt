@@ -22,24 +22,24 @@ class ParserTest {
 
     @Test
     fun letStatements() {
-        val input = """
-let x = 5;
-let y = 10;
-let foobar = 838383;
-"""
-        val l = Lexer.newInstance(input)
-        val p = Parser.newInstance(l)
-        val program = p.parseProgram()
-        checkParserErrors(p)
+        val tests = arrayOf(
+                Triple("let x = 5;", "x", 5),
+                Triple("let y = true;", "y", true),
+                Triple("let foobar = y;", "foobar", "y"))
 
-        assertThat(program.statements).hasSize(3)
-
-        val tests = arrayOf("x", "y", "foobar")
-
-        for ((i, test) in tests.withIndex()) {
-            testLetStatement(program.statements[i], test)
+        for ((input, expectedIdentifier, expectedValue) in tests) {
+            val l = Lexer.newInstance(input)
+            val p = Parser.newInstance(l)
+            val program = p.parseProgram()
+            checkParserErrors(p)
+            assertThat(program.statements).hasSize(1)
+            val stmt = program.statements[0]
+            testLetStatement(stmt, expectedIdentifier)
+            val let = stmt as LetStatement
+            testLiteralExpression(let.value, expectedValue)
         }
     }
+
 
     private fun testLetStatement(s: Statement, name: String) {
         assertThat(s.tokenLiteral()).isEqualTo("let")
@@ -51,22 +51,20 @@ let foobar = 838383;
 
     @Test
     fun returnStatements() {
-        val input = """
-return 5;
-return 10;
-return 838383;
-"""
-        val l = Lexer.newInstance(input)
-        val p = Parser.newInstance(l)
-        val program = p.parseProgram()
-        checkParserErrors(p)
-
-        assertThat(program.statements).hasSize(3)
-
-        for (stmt in program.statements) {
-            assertThat(stmt).isInstanceOf(ReturnStatement::class.java)
+        val tests = arrayOf(
+                "return 5;" to 5,
+                "return true;" to true,
+                "return foobar;" to "foobar")
+        for ((input, expected) in tests) {
+            val l = Lexer.newInstance(input)
+            val p = Parser.newInstance(l)
+            val program = p.parseProgram()
+            checkParserErrors(p)
+            assertThat(program.statements).hasSize(1)
+            val stmt = program.statements[0]
             val ret = stmt as ReturnStatement
             assertThat(ret.tokenLiteral()).isEqualTo("return")
+            testLiteralExpression(ret.value, expected)
         }
     }
 
