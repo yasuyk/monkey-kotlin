@@ -212,12 +212,36 @@ class ParserTest {
         testInfixExpression(exp.arguments[2], 4, "+", 5)
     }
 
+    @Test
+    fun callExpressionParameterParsing() {
+        val tests = arrayOf(
+                Triple("add();", "add", listOf()),
+                Triple("add(1);", "add", listOf("1")),
+                Triple("add(1, 2 * 3, 4 + 5);", "add", listOf("1", "(2 * 3)", "(4 + 5)"))
+        )
+
+        for ((input, expectdIdent, expectedArgs) in tests) {
+            val p = Parser.newInstance(Lexer.newInstance(input))
+            val program = p.parseProgram()
+            checkParserErrors(p)
+            val stmt = program.statements[0] as ExpressionStatement
+            val exp = stmt.value as CallExpression
+            testIdentifier(exp.function, expectdIdent)
+            assertThat(exp.arguments.size).isEqualTo(expectedArgs.size)
+            for ((i, arg) in expectedArgs.withIndex()) {
+                assertThat(exp.arguments[i].string()).isEqualTo(arg)
+            }
+        }
+    }
+
 
     @Test
     fun parsingPrefixExpressions() {
         val prefixTests = arrayOf(
                 Triple("!5;", "!", 5L),
                 Triple("-15;", "-", 15L),
+                Triple("!foobar;", "!", "foobar"),
+                Triple("-foobar;", "-", "foobar"),
                 Triple("!true;", "!", true),
                 Triple("!false;", "!", false)
         )
@@ -250,6 +274,14 @@ class ParserTest {
                 TestData("5 < 5;", 5, "<", 5),
                 TestData("5 == 5;", 5, "==", 5),
                 TestData("5 != 5;", 5, "!=", 5),
+                TestData("foobar + barfoo;", "foobar", "+", "barfoo"),
+                TestData("foobar - barfoo;", "foobar", "-", "barfoo"),
+                TestData("foobar * barfoo;", "foobar", "*", "barfoo"),
+                TestData("foobar / barfoo;", "foobar", "/", "barfoo"),
+                TestData("foobar > barfoo;", "foobar", ">", "barfoo"),
+                TestData("foobar < barfoo;", "foobar", "<", "barfoo"),
+                TestData("foobar == barfoo;", "foobar", "==", "barfoo"),
+                TestData("foobar != barfoo;", "foobar", "!=", "barfoo"),
                 TestData("true == true", true, "==", true),
                 TestData("true != false", true, "!=", false),
                 TestData("false == false", false, "==", false)
