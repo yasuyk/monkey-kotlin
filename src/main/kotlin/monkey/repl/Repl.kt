@@ -25,7 +25,7 @@ class Repl {
         val scanner = Scanner(input)
 
         while (true) {
-            print(PROMPT)
+            output.write(PROMPT)
 
             val line = scanner.nextLine()
             val l = Lexer.newInstance(line)
@@ -37,18 +37,22 @@ class Repl {
                 continue
             }
 
-            output.write(program.string().toByteArray())
-            output.write("\n".toByteArray())
+            output.write(program.string())
+            output.write("\n")
         }
     }
 
 
     private fun printParserErrors(output: OutputStream, errors: List<String>) {
-        output.write(monkeyFace.toByteArray())
-        output.write("Woops! We ran into some monkey business here!\n".toByteArray())
-        output.write(" parser errors:\n".toByteArray())
+        output.write(monkeyFace)
+        output.write("Woops! We ran into some monkey business here!\n")
+        output.write(" parser errors:\n")
         for (msg in errors) {
-            output.write("\t$msg\n".toByteArray())
+            output.write("\t$msg\n")
         }
+    }
+
+    private fun OutputStream.write(string: String) {
+        this.write(string.toByteArray())
     }
 }
