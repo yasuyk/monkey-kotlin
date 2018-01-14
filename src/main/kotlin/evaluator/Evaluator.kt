@@ -5,8 +5,10 @@ import monkey.`object`.Integer
 import monkey.`object`.Null
 import monkey.`object`.Object
 import monkey.`object`.ObjectType
+import monkey.ast.BlockStatement
 import monkey.ast.Bool
 import monkey.ast.ExpressionStatement
+import monkey.ast.IfExpression
 import monkey.ast.InfixExpression
 import monkey.ast.IntegerLiteral
 import monkey.ast.Node
@@ -23,15 +25,18 @@ fun eval(node: Node?): Object? {
     return when (node) {
         is Program -> evalStatements(node.statements)
         is ExpressionStatement -> eval(node.value)
+        is BlockStatement -> evalStatements(node.statements)
         is PrefixExpression -> evalPrefixExpression(node.operator, eval(node.right))
         is InfixExpression -> {
             evalInfixExpression(node.operator, eval(node.left), eval(node.right))
         }
+        is IfExpression -> evalIfExpression(node)
         is IntegerLiteral -> Integer(node.value)
         is Bool -> nativeBoolToBooleanObject(node.value)
         else -> null
     }
 }
+
 
 private fun evalStatements(statements: List<Statement>): Object? {
     var result: Object? = null
@@ -95,3 +100,22 @@ fun evalIntegerInfixExpression(operator: String, left: Object, right: Object): O
         else -> NULL
     }
 }
+
+fun evalIfExpression(ie: IfExpression): Object? {
+    val condition = eval(ie.condition)
+    return when {
+        isTruthy(condition) -> eval(ie.consequence)
+        ie.alternative != null -> eval(ie.alternative)
+        else -> NULL
+    }
+}
+
+fun isTruthy(condition: Object?): kotlin.Boolean {
+    return when (condition) {
+        NULL -> false
+        TRUE -> true
+        FALSE -> false
+        else -> true
+    }
+}
+

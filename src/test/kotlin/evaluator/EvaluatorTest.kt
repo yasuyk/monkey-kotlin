@@ -50,6 +50,27 @@ class EvaluatorTest {
     }
 
     @Test
+    fun ifElseExpression() {
+        val tests = arrayOf(
+                "if (true) { 10 }" to 10,
+                "if (false) { 10 " to null,
+                "if (1) { 10 }" to 10,
+                "if (1 < 2) { 10 }" to 10,
+                "if (1 > 2) { 10 }" to null,
+                "if (1 > 2) { 10 } else { 20 }" to 20,
+                "if (1 < 2) { 10 } else { 20 }" to 10
+        )
+        for ((input, expected) in tests) {
+            val evaluated = testEval(input)
+            if (expected != null) {
+                testIntegerObject(evaluated, expected.toLong())
+            } else {
+                testNullObject(evaluated)
+            }
+        }
+    }
+
+    @Test
     fun evalBangOperator() {
         val tests = arrayOf(
                 "!true" to false,
@@ -95,5 +116,10 @@ class EvaluatorTest {
         val result = obj as Boolean
         assertThat(result.value).isEqualTo(expected)
     }
+
+    private fun testNullObject(obj: Object?) {
+        assertThat(obj).isEqualTo(NULL)
+    }
+
 
 }
