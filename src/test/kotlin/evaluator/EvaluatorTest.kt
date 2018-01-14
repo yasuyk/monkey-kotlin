@@ -14,7 +14,9 @@ class EvaluatorTest {
     fun evalIntegerExpression() {
         val tests = arrayOf(
                 "5" to 5L,
-                "10" to 10L
+                "10" to 10L,
+                "-5" to -5L,
+                "-10" to -10L
         )
 
         for ((input, expected) in tests) {
@@ -36,6 +38,22 @@ class EvaluatorTest {
         }
     }
 
+    @Test
+    fun evalBangOperator() {
+        val tests = arrayOf(
+                "!true" to false,
+                "!false" to true,
+                "!5" to false,
+                "!!true" to true,
+                "!!false" to false,
+                "!!5" to true
+        )
+
+        for ((input, expected) in tests) {
+            val evaluated = testEval(input)
+            testBooleanObject(evaluated, expected)
+        }
+    }
 
     private fun testEval(input: String)
             = eval(Parser.newInstance(Lexer.newInstance(input)).parseProgram())
