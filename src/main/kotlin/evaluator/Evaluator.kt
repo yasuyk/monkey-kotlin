@@ -1,11 +1,13 @@
 package evaluator
 
 import monkey.`object`.Boolean
+import monkey.`object`.Error
 import monkey.`object`.Integer
 import monkey.`object`.Null
 import monkey.`object`.Object
 import monkey.`object`.ObjectType
 import monkey.`object`.ReturnValue
+import monkey.`object`.isError
 import monkey.ast.BlockStatement
 import monkey.ast.Bool
 import monkey.ast.ExpressionStatement
@@ -27,10 +29,24 @@ fun eval(node: Node?): Object? {
         is Program -> evalProgram(node)
         is ExpressionStatement -> eval(node.value)
         is BlockStatement -> evalBlockStatement(node)
-        is ReturnStatement -> ReturnValue(eval(node.value))
-        is PrefixExpression -> evalPrefixExpression(node.operator, eval(node.right))
+        is ReturnStatement -> {
+            val v = eval(node.value)
+            if (v.isError()) v else ReturnValue(v)
+        }
+        is PrefixExpression -> {
+            val v = eval(node.right)
+            if (v.isError()) v else evalPrefixExpression(node.operator, v)
+        }
         is InfixExpression -> {
-            evalInfixExpression(node.operator, eval(node.left), eval(node.right))
+            val left = eval(node.left)
+            if (left.isError()) {
+                return left
+            }
+            val right = eval(node.right)
+            if (right.isError()) {
+                return right
+            }
+            evalInfixExpression(node.operator, left, right)
         }
         is IfExpression -> evalIfExpression(node)
         is IntegerLiteral -> Integer(node.value)
@@ -40,12 +56,13 @@ fun eval(node: Node?): Object? {
 }
 
 
-private fun evalProgram(program : Program): Object? {
+private fun evalProgram(program: Program): Object? {
     var result: Object? = null
     for (stmt in program.statements) {
         result = eval(stmt)
-        if (result is ReturnValue) {
-            return result.value
+        when (result) {
+            is ReturnValue -> return result.value
+            is Error -> return result
         }
     }
     return result
@@ -57,7 +74,7 @@ fun evalPrefixExpression(operator: String, right: Object?): Object? {
     return when (operator) {
         "!" -> evalBangOperatorExpression(right)
         "-" -> evalMinusPrefixOperatorExpression(right)
-        else -> NULL
+        else -> Error("unknown operator: $operator${right?.type()}")
     }
 }
 
@@ -72,7 +89,7 @@ fun evalBangOperatorExpression(right: Object?): Object? {
 
 fun evalMinusPrefixOperatorExpression(right: Object?): Object? {
     if (right?.type() != ObjectType.INTEGER) {
-        return NULL
+        return Error("unknown operator: -${right?.type()}")
     }
 
     val int = right as Integer
@@ -83,10 +100,11 @@ fun evalInfixExpression(operator: String, left: Object?, right: Object?): Object
     if (left?.type() == ObjectType.INTEGER && right?.type() == ObjectType.INTEGER) {
         return evalIntegerInfixExpression(operator, left, right)
     }
-    return when (operator) {
-        "==" -> nativeBoolToBooleanObject(left == right)
-        "!=" -> nativeBoolToBooleanObject(left != right)
-        else -> NULL
+    return when {
+        operator == "==" -> nativeBoolToBooleanObject(left == right)
+        operator == "!=" -> nativeBoolToBooleanObject(left != right)
+        left?.type() != right?.type() -> Error("type mismatch: ${left?.type()} $operator ${right?.type()}")
+        else -> Error("unknown operator: ${left?.type()} $operator ${right?.type()}")
     }
 }
 
@@ -102,12 +120,16 @@ fun evalIntegerInfixExpression(operator: String, left: Object, right: Object): O
         ">" -> nativeBoolToBooleanObject(leftVal.value > rightVal.value)
         "==" -> nativeBoolToBooleanObject(leftVal.value == rightVal.value)
         "!=" -> nativeBoolToBooleanObject(leftVal.value != rightVal.value)
-        else -> NULL
+        else -> Error("unknown operator: ${left.type()} $operator ${right.type()}")
+
     }
 }
 
 fun evalIfExpression(ie: IfExpression): Object? {
     val condition = eval(ie.condition)
+    if (condition.isError()) {
+        return condition
+    }
     return when {
         isTruthy(condition) -> eval(ie.consequence)
         ie.alternative != null -> eval(ie.alternative)
@@ -128,8 +150,11 @@ fun evalBlockStatement(block: BlockStatement): Object? {
     var result: Object? = null
     for (stmt in block.statements) {
         result = eval(stmt)
-        if (result?.type() == ObjectType.RETURN_VALUE) {
-            return result
+        result?.let {
+            if (it.type() == ObjectType.RETURN_VALUE ||
+                    it.type() == ObjectType.ERROR) {
+                return result
+            }
         }
     }
     return result

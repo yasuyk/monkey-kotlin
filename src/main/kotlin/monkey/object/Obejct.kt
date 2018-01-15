@@ -5,6 +5,7 @@ enum class ObjectType {
     BOOLEAN,
     NULL,
     RETURN_VALUE,
+    ERROR,
 }
 
 
@@ -12,6 +13,8 @@ interface Object {
     fun type(): ObjectType
     fun inspect(): String
 }
+
+fun Object?.isError() = this?.type() == ObjectType.ERROR
 
 class Integer(val value: Long) : Object {
     override fun type() = ObjectType.INTEGER
@@ -31,4 +34,9 @@ class Null : Object {
 class ReturnValue(val value: Object?) : Object {
     override fun type() = ObjectType.RETURN_VALUE
     override fun inspect() = value?.inspect() ?: ""
+}
+
+class Error(val message: String) : Object {
+    override fun type() = ObjectType.ERROR
+    override fun inspect() = "ERROR: $message"
 }

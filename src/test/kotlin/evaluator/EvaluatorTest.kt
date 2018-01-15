@@ -1,6 +1,7 @@
 package evaluator
 
 import monkey.`object`.Boolean
+import monkey.`object`.Error
 import monkey.`object`.Integer
 import monkey.`object`.Object
 import monkey.lexer.Lexer
@@ -120,7 +121,7 @@ if (10 > 1) {
 
   return 1;
 }
-""" to	10
+""" to 10
         )
         for ((input, expected) in tests) {
             val evaluated = testEval(input)
@@ -128,9 +129,38 @@ if (10 > 1) {
         }
     }
 
+    @Test
+    fun errorHandling() {
+        val tests = arrayOf(
+                "5 + true;" to "type mismatch: INTEGER + BOOLEAN",
+                "5 + true; 5;" to "type mismatch: INTEGER + BOOLEAN",
+                "-true" to "unknown operator: -BOOLEAN",
+                "true + false;" to "unknown operator: BOOLEAN + BOOLEAN",
+                "5; true + false; 5" to "unknown operator: BOOLEAN + BOOLEAN",
+                "if (10 > 1) { true + false; }" to "unknown operator: BOOLEAN + BOOLEAN",
+                """
+if (10 > 1) {
+  if (10 > 1) {
+    return true + false;
+  }
 
-    private fun testEval(input: String)
-            = eval(Parser.newInstance(Lexer.newInstance(input)).parseProgram())
+  return 1;
+}
+""" to "unknown operator: BOOLEAN + BOOLEAN"
+        )
+        for ((input, expected) in tests) {
+            val evaluated = testEval(input)
+            val err = evaluated as Error
+            assertThat(err.message).isEqualTo(expected)
+        }
+    }
+
+
+    private fun testEval(input: String): Object? {
+        val p = Parser.newInstance(Lexer.newInstance(input)).parseProgram()
+        return eval(p)
+    }
+
 
     private fun testIntegerObject(obj: Object?, expected: Long) {
         val result = obj as Integer
