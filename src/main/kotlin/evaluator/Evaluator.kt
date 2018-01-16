@@ -1,6 +1,7 @@
 package evaluator
 
 import monkey.`object`.Boolean
+import monkey.`object`.Environment
 import monkey.`object`.Error
 import monkey.`object`.Integer
 import monkey.`object`.Null
@@ -11,9 +12,11 @@ import monkey.`object`.isError
 import monkey.ast.BlockStatement
 import monkey.ast.Bool
 import monkey.ast.ExpressionStatement
+import monkey.ast.Identifier
 import monkey.ast.IfExpression
 import monkey.ast.InfixExpression
 import monkey.ast.IntegerLiteral
+import monkey.ast.LetStatement
 import monkey.ast.Node
 import monkey.ast.PrefixExpression
 import monkey.ast.Program
@@ -24,31 +27,40 @@ val TRUE = Boolean(true)
 val FALSE = Boolean(false)
 val NULL = Null()
 
-fun eval(node: Node?): Object? {
+fun eval(node: Node?, env: Environment): Object? {
     return when (node) {
-        is Program -> evalProgram(node)
-        is ExpressionStatement -> eval(node.value)
-        is BlockStatement -> evalBlockStatement(node)
+        is Program -> evalProgram(node, env)
+        is ExpressionStatement -> eval(node.value, env)
+        is BlockStatement -> evalBlockStatement(node, env)
         is ReturnStatement -> {
-            val v = eval(node.value)
+            val v = eval(node.value, env)
             if (v.isError()) v else ReturnValue(v)
         }
+        is LetStatement -> {
+            val v = eval(node.value, env)
+            if (v.isError()) {
+                return v
+            }
+            env[node.name.value] = v
+            return v
+        }
         is PrefixExpression -> {
-            val v = eval(node.right)
+            val v = eval(node.right, env)
             if (v.isError()) v else evalPrefixExpression(node.operator, v)
         }
         is InfixExpression -> {
-            val left = eval(node.left)
+            val left = eval(node.left, env)
             if (left.isError()) {
                 return left
             }
-            val right = eval(node.right)
+            val right = eval(node.right, env)
             if (right.isError()) {
                 return right
             }
             evalInfixExpression(node.operator, left, right)
         }
-        is IfExpression -> evalIfExpression(node)
+        is IfExpression -> evalIfExpression(node, env)
+        is Identifier -> evalIdentifier(node, env)
         is IntegerLiteral -> Integer(node.value)
         is Bool -> nativeBoolToBooleanObject(node.value)
         else -> null
@@ -56,10 +68,10 @@ fun eval(node: Node?): Object? {
 }
 
 
-private fun evalProgram(program: Program): Object? {
+private fun evalProgram(program: Program, env: Environment): Object? {
     var result: Object? = null
     for (stmt in program.statements) {
-        result = eval(stmt)
+        result = eval(stmt, env)
         when (result) {
             is ReturnValue -> return result.value
             is Error -> return result
@@ -125,14 +137,14 @@ fun evalIntegerInfixExpression(operator: String, left: Object, right: Object): O
     }
 }
 
-fun evalIfExpression(ie: IfExpression): Object? {
-    val condition = eval(ie.condition)
+fun evalIfExpression(ie: IfExpression, env: Environment): Object? {
+    val condition = eval(ie.condition, env)
     if (condition.isError()) {
         return condition
     }
     return when {
-        isTruthy(condition) -> eval(ie.consequence)
-        ie.alternative != null -> eval(ie.alternative)
+        isTruthy(condition) -> eval(ie.consequence, env)
+        ie.alternative != null -> eval(ie.alternative, env)
         else -> NULL
     }
 }
@@ -146,10 +158,10 @@ fun isTruthy(condition: Object?): kotlin.Boolean {
     }
 }
 
-fun evalBlockStatement(block: BlockStatement): Object? {
+fun evalBlockStatement(block: BlockStatement, env: Environment): Object? {
     var result: Object? = null
     for (stmt in block.statements) {
-        result = eval(stmt)
+        result = eval(stmt, env)
         result?.let {
             if (it.type() == ObjectType.RETURN_VALUE ||
                     it.type() == ObjectType.ERROR) {
@@ -158,5 +170,8 @@ fun evalBlockStatement(block: BlockStatement): Object? {
         }
     }
     return result
+}
 
+fun evalIdentifier(node: Identifier, env: Environment): Object? {
+    return env[node.value] ?: Error("identifier not found: ${node.value}")
 }

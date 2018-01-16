@@ -1,6 +1,7 @@
 package evaluator
 
 import monkey.`object`.Boolean
+import monkey.`object`.Environment
 import monkey.`object`.Error
 import monkey.`object`.Integer
 import monkey.`object`.Object
@@ -146,7 +147,8 @@ if (10 > 1) {
 
   return 1;
 }
-""" to "unknown operator: BOOLEAN + BOOLEAN"
+""" to "unknown operator: BOOLEAN + BOOLEAN",
+                "foobar" to "identifier not found: foobar"
         )
         for ((input, expected) in tests) {
             val evaluated = testEval(input)
@@ -155,10 +157,23 @@ if (10 > 1) {
         }
     }
 
+    @Test
+    fun retStatements() {
+        val tests = arrayOf(
+                "let a = 5; a;" to 5,
+                "let a = 5 * 5; a;" to 25,
+                "let a = 5; let b = a; b;" to 5,
+                "let a = 5; let b = a; let c = a + b + 5; c;" to 15
+        )
+        for ((input, expected) in tests) {
+            testIntegerObject(testEval(input), expected.toLong())
+        }
+    }
 
     private fun testEval(input: String): Object? {
         val p = Parser.newInstance(Lexer.newInstance(input)).parseProgram()
-        return eval(p)
+        val env = Environment()
+        return eval(p, env)
     }
 
 

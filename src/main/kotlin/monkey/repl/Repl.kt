@@ -1,6 +1,7 @@
 package monkey.repl
 
 import evaluator.eval
+import monkey.`object`.Environment
 import monkey.lexer.Lexer
 import monkey.parser.Parser
 import java.io.File
@@ -23,6 +24,7 @@ class Repl {
 
     fun start(input: InputStream, output: OutputStream) {
         val scanner = Scanner(input)
+        val env = Environment()
 
         while (true) {
             output.write(PROMPT)
@@ -37,7 +39,7 @@ class Repl {
                 continue
             }
 
-            val evaluated = eval(program)
+            val evaluated = eval(program, env)
             if (evaluated != null) {
                 output.write(evaluated.inspect())
                 output.write("\n")
