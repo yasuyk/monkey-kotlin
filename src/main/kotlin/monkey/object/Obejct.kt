@@ -1,11 +1,15 @@
 package monkey.`object`
 
+import monkey.ast.BlockStatement
+import monkey.ast.Identifier
+
 enum class ObjectType {
     INTEGER,
     BOOLEAN,
     NULL,
     RETURN_VALUE,
     ERROR,
+    FUNCTION,
 }
 
 
@@ -40,3 +44,21 @@ class Error(val message: String) : Object {
     override fun type() = ObjectType.ERROR
     override fun inspect() = "ERROR: $message"
 }
+
+class Function(val parameters: List<Identifier>,
+               val body: BlockStatement,
+               val env: Environment) : Object {
+    override fun type() = ObjectType.FUNCTION
+    override fun inspect(): String {
+        return StringBuffer().apply {
+            append("fn")
+            append("(")
+            append(parameters.joinToString{ p -> p.string() })
+            append(") {\n")
+            append(body.string())
+            append("\n}")
+        }.toString()
+    }
+}
+
+

@@ -132,7 +132,7 @@ class FunctionLiteral(private val token: Token,
         return StringBuffer().also {
             it.append(tokenLiteral())
             it.append("(")
-            it.append(parameters.joinToString())
+            it.append(parameters.joinToString{ p -> p.string() })
             it.append(")")
             it.append(body.string())
         }.toString()

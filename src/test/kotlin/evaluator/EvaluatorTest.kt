@@ -3,6 +3,7 @@ package evaluator
 import monkey.`object`.Boolean
 import monkey.`object`.Environment
 import monkey.`object`.Error
+import monkey.`object`.Function
 import monkey.`object`.Integer
 import monkey.`object`.Object
 import monkey.lexer.Lexer
@@ -122,7 +123,22 @@ if (10 > 1) {
 
   return 1;
 }
-""" to 10
+""" to 10,
+                """
+let f = fn(x) {
+  return x;
+  x + 10;
+};
+f(10);
+""" to 10,
+                """
+let f = fn(x) {
+   let result = x + 10;
+   return result;
+   return 10;
+};
+f(10);
+""" to 20
         )
         for ((input, expected) in tests) {
             val evaluated = testEval(input)
@@ -168,6 +184,43 @@ if (10 > 1) {
         for ((input, expected) in tests) {
             testIntegerObject(testEval(input), expected.toLong())
         }
+    }
+
+    @Test
+    fun functionObject() {
+        val input = "fn(x) { x + 2; };"
+        val evaluated = testEval(input)
+        val fn = evaluated as Function
+        assertThat(fn.parameters).hasSize(1)
+        assertThat(fn.parameters[0].string()).isEqualTo("x")
+        assertThat(fn.body.string()).isEqualTo("(x + 2)")
+    }
+
+    @Test
+    fun functionApplication() {
+        val tests = arrayOf(
+                "let identity = fn(x) { x; }; identity(5);" to 5,
+                "let identity = fn(x) { return x; }; identity(5);" to 5,
+                "let double = fn(x) { x * 2; }; double(5);" to 10,
+                "let add = fn(x, y) { x + y; }; add(5, 5);" to 10,
+                "let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));" to 20,
+                "fn(x) { x; }(5)" to 5
+        )
+        for ((input, expected) in tests) {
+            testIntegerObject(testEval(input), expected.toLong())
+        }
+    }
+
+    @Test
+    fun closures() {
+        val input = """
+            let newAdder = fn(x) {
+              fn(y) { x + y };
+            };
+            let addTwo = newAdder(2);
+            addTwo(2);
+            """
+        testIntegerObject(testEval(input), 4)
     }
 
     private fun testEval(input: String): Object? {

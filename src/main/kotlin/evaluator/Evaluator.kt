@@ -2,7 +2,9 @@ package evaluator
 
 import monkey.`object`.Boolean
 import monkey.`object`.Environment
+import monkey.`object`.Environment.Companion.newEnclosedEnvironment
 import monkey.`object`.Error
+import monkey.`object`.Function
 import monkey.`object`.Integer
 import monkey.`object`.Null
 import monkey.`object`.Object
@@ -11,7 +13,10 @@ import monkey.`object`.ReturnValue
 import monkey.`object`.isError
 import monkey.ast.BlockStatement
 import monkey.ast.Bool
+import monkey.ast.CallExpression
+import monkey.ast.Expression
 import monkey.ast.ExpressionStatement
+import monkey.ast.FunctionLiteral
 import monkey.ast.Identifier
 import monkey.ast.IfExpression
 import monkey.ast.InfixExpression
@@ -42,7 +47,7 @@ fun eval(node: Node?, env: Environment): Object? {
                 return v
             }
             env[node.name.value] = v
-            return v
+            return null
         }
         is PrefixExpression -> {
             val v = eval(node.right, env)
@@ -60,8 +65,20 @@ fun eval(node: Node?, env: Environment): Object? {
             evalInfixExpression(node.operator, left, right)
         }
         is IfExpression -> evalIfExpression(node, env)
+        is CallExpression -> {
+            val function = eval(node.function, env)
+            if (function.isError()) {
+                return function
+            }
+            val args = evalExpressions(node.arguments, env)
+            if (args.size == 1 && args[0].isError()) {
+                return args[0]
+            }
+            return applyFunction(function, args)
+        }
         is Identifier -> evalIdentifier(node, env)
         is IntegerLiteral -> Integer(node.value)
+        is FunctionLiteral -> Function(node.parameters, node.body, env)
         is Bool -> nativeBoolToBooleanObject(node.value)
         else -> null
     }
@@ -149,6 +166,34 @@ fun evalIfExpression(ie: IfExpression, env: Environment): Object? {
     }
 }
 
+fun evalExpressions(expressions: List<Expression>, env: Environment): List<Object?> {
+
+    val result = mutableListOf<Object?>()
+    for (e in expressions) {
+        val evaluated = eval(e, env)
+        if (evaluated.isError()) {
+            return listOf(evaluated)
+        }
+        result.add(evaluated)
+    }
+    return result
+}
+
+fun applyFunction(fn: Object?, args: List<Object?>): Object? {
+    val function = fn as? Function ?: return Error("not a function: ${fn?.type()}")
+    val extendedEnv = extendFunctionEnv(function, args)
+    val evaluated = eval(function.body, extendedEnv)
+    return unwrapReturnValue(evaluated)
+}
+
+fun extendFunctionEnv(fn: Function, args: List<Object?>): Environment {
+    val env = newEnclosedEnvironment(fn.env)
+    for ((i, param) in fn.parameters.withIndex()) {
+        env[param.value] = args[i]
+    }
+    return env
+}
+
 fun isTruthy(condition: Object?): kotlin.Boolean {
     return when (condition) {
         NULL -> false
@@ -157,6 +202,14 @@ fun isTruthy(condition: Object?): kotlin.Boolean {
         else -> true
     }
 }
+
+fun unwrapReturnValue(obj: Object?): Object? {
+    return when(obj) {
+        is ReturnValue -> obj.value
+        else -> obj
+    }
+}
+
 
 fun evalBlockStatement(block: BlockStatement, env: Environment): Object? {
     var result: Object? = null
