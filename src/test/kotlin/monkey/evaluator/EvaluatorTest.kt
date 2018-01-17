@@ -1,4 +1,4 @@
-package evaluator
+package monkey.evaluator
 
 import monkey.`object`.Boolean
 import monkey.`object`.Environment

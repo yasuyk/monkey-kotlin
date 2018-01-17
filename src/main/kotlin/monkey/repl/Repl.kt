@@ -1,6 +1,6 @@
 package monkey.repl
 
-import evaluator.eval
+import monkey.evaluator.eval
 import monkey.`object`.Environment
 import monkey.lexer.Lexer
 import monkey.parser.Parser
