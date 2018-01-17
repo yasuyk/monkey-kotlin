@@ -25,6 +25,7 @@ import monkey.token.RETURN
 import monkey.token.RPAREN
 import monkey.token.SEMICOLON
 import monkey.token.SLASH
+import monkey.token.STRING
 import monkey.token.TRUE
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -57,6 +58,8 @@ if (5 < 10) {
 
 10 == 10;
 10 != 9;
+"foobar"
+"foo bar"
 """
 
         val tests = arrayOf(
@@ -133,6 +136,8 @@ if (5 < 10) {
                 NOT_EQ to "!=",
                 INT to "9",
                 SEMICOLON to ";",
+                STRING to "foobar",
+                STRING to "foo bar",
                 EOF to ""
         )
 

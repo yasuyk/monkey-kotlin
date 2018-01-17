@@ -6,6 +6,7 @@ const val EOF = "EOF"
 // Identifiers + literals
 const val IDENT = "IDENT" // add, foobar, x, y, ...
 const val INT = "INT"   // 1343456
+const val STRING = "STRING" // "foobar"
 
 // Operators
 const val ASSIGN = "="

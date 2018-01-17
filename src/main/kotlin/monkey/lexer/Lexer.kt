@@ -19,6 +19,7 @@ import monkey.token.RBRACE
 import monkey.token.RPAREN
 import monkey.token.SEMICOLON
 import monkey.token.SLASH
+import monkey.token.STRING
 import monkey.token.Token
 import monkey.token.TokenType
 import monkey.token.lookupIdent
@@ -69,6 +70,7 @@ class Lexer private constructor(private val input: String) {
             '}' -> newToken(RBRACE, ch)
             '(' -> newToken(LPAREN, ch)
             ')' -> newToken(RPAREN, ch)
+            '"'-> Token(STRING, readString())
             0.toChar() -> Token(EOF, "")
             else -> when {
                 isLetter(ch) -> {
@@ -83,7 +85,6 @@ class Lexer private constructor(private val input: String) {
         readChar()
         return tok
     }
-
 
     fun readChar() {
         ch = if (readPosition >= input.length) {
@@ -119,6 +120,18 @@ class Lexer private constructor(private val input: String) {
         return input.substring(pos until position)
     }
 
+    private fun readString(): String {
+        val pos = position + 1
+        while (true) {
+            readChar()
+            if (ch == '"' || ch == 0.toChar()) {
+                break
+            }
+        }
+        return input.substring(pos until position)
+    }
+
+
     private fun skipWhitespace() {
         while (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r') {
             readChar()
@@ -133,7 +146,6 @@ class Lexer private constructor(private val input: String) {
     private fun isDigit(ch: Char): Boolean {
         return ch in '0'..'9'
     }
-
 
     private fun newToken(tokenType: TokenType, ch: Char) = Token(tokenType, ch.toString())
 
