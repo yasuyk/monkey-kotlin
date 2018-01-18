@@ -6,6 +6,7 @@ import monkey.`object`.Environment.Companion.newEnclosedEnvironment
 import monkey.`object`.Error
 import monkey.`object`.Function
 import monkey.`object`.Integer
+import monkey.`object`.MonkeyString
 import monkey.`object`.Null
 import monkey.`object`.Object
 import monkey.`object`.ObjectType
@@ -26,6 +27,7 @@ import monkey.ast.Node
 import monkey.ast.PrefixExpression
 import monkey.ast.Program
 import monkey.ast.ReturnStatement
+import monkey.ast.StringLiteral
 
 
 val TRUE = Boolean(true)
@@ -78,6 +80,7 @@ fun eval(node: Node?, env: Environment): Object? {
         }
         is Identifier -> evalIdentifier(node, env)
         is IntegerLiteral -> Integer(node.value)
+        is StringLiteral -> MonkeyString(node.value)
         is FunctionLiteral -> Function(node.parameters, node.body, env)
         is Bool -> nativeBoolToBooleanObject(node.value)
         else -> null

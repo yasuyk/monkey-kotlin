@@ -10,6 +10,7 @@ enum class ObjectType {
     RETURN_VALUE,
     ERROR,
     FUNCTION,
+    STRING,
 }
 
 
@@ -61,4 +62,8 @@ class Function(val parameters: List<Identifier>,
     }
 }
 
+class MonkeyString(val value: String) : Object {
+    override fun type() = ObjectType.STRING
+    override fun inspect() = value
+}
 

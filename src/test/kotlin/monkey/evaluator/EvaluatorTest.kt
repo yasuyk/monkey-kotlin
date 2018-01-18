@@ -5,6 +5,7 @@ import monkey.`object`.Environment
 import monkey.`object`.Error
 import monkey.`object`.Function
 import monkey.`object`.Integer
+import monkey.`object`.MonkeyString
 import monkey.`object`.Object
 import monkey.lexer.Lexer
 import monkey.parser.Parser
@@ -221,6 +222,14 @@ if (10 > 1) {
             addTwo(2);
             """
         testIntegerObject(testEval(input), 4)
+    }
+
+    @Test
+    fun stringLiteral() {
+        val input = "\"Hello World!\""
+        val evaluated = testEval(input)
+        val str = evaluated as MonkeyString
+        assertThat(str.value).isEqualTo("Hello World!")
     }
 
     private fun testEval(input: String): Object? {
