@@ -13,6 +13,7 @@ import monkey.ast.LetStatement
 import monkey.ast.PrefixExpression
 import monkey.ast.ReturnStatement
 import monkey.ast.Statement
+import monkey.ast.StringLiteral
 import monkey.lexer.Lexer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert
@@ -103,6 +104,23 @@ class ParserTest {
 
         assertThat(literal.value).isEqualTo(5)
         assertThat(literal.tokenLiteral()).isEqualTo("5")
+    }
+
+    @Test
+    fun stringLiteralExpression() {
+        val input = "\"hello world\";"
+
+        val l = Lexer.newInstance(input)
+        val p = Parser.newInstance(l)
+        val program = p.parseProgram()
+        checkParserErrors(p)
+
+        assertThat(program.statements).hasSize(1)
+
+        val stmt = program.statements[0] as ExpressionStatement
+        val literal = stmt.value as StringLiteral
+
+        assertThat(literal.value).isEqualTo("hello world")
     }
 
     @Test

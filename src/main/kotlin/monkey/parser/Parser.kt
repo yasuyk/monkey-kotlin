@@ -15,6 +15,7 @@ import monkey.ast.PrefixExpression
 import monkey.ast.Program
 import monkey.ast.ReturnStatement
 import monkey.ast.Statement
+import monkey.ast.StringLiteral
 import monkey.lexer.Lexer
 import monkey.token.ASSIGN
 import monkey.token.ASTERISK
@@ -42,6 +43,7 @@ import monkey.token.RETURN
 import monkey.token.RPAREN
 import monkey.token.SEMICOLON
 import monkey.token.SLASH
+import monkey.token.STRING
 import monkey.token.TRUE
 import monkey.token.Token
 import monkey.token.TokenType
@@ -95,6 +97,7 @@ class Parser private constructor(private val lexer: Lexer) {
 
                 registerPrefix(IDENT, ::parseIdentifier)
                 registerPrefix(INT, ::parseIntegerLiteral)
+                registerPrefix(STRING, ::parseStringLiteral)
                 registerPrefix(TRUE, ::parseBool)
                 registerPrefix(FALSE, ::parseBool)
                 registerPrefix(FUNCTION, ::parseFunctionLiteral)
@@ -238,6 +241,8 @@ class Parser private constructor(private val lexer: Lexer) {
             null
         }
     }
+
+    fun parseStringLiteral(): Expression? = StringLiteral(curToken, curToken.literal)
 
     fun parseBool(): Expression {
         return Bool(curToken, curTokenIs(TRUE))

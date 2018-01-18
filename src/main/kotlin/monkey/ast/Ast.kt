@@ -139,6 +139,13 @@ class FunctionLiteral(private val token: Token,
     }
 }
 
+class StringLiteral(private val token: Token, val value: String) : Expression {
+    override fun tokenLiteral() = token.literal
+    override fun expressionNode() {}
+
+    override fun string(): String = token.literal
+}
+
 class PrefixExpression(private val token: Token,
                        val operator: String,
                        val right: Expression?) : Expression {
