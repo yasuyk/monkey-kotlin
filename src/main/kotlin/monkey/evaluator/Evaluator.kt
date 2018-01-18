@@ -1,6 +1,7 @@
 package monkey.evaluator
 
 import monkey.`object`.Boolean
+import monkey.`object`.Builtin
 import monkey.`object`.Environment
 import monkey.`object`.Environment.Companion.newEnclosedEnvironment
 import monkey.`object`.Error
@@ -196,10 +197,15 @@ fun evalExpressions(expressions: List<Expression>, env: Environment): List<Objec
 }
 
 fun applyFunction(fn: Object?, args: List<Object?>): Object? {
-    val function = fn as? Function ?: return Error("not a function: ${fn?.type()}")
-    val extendedEnv = extendFunctionEnv(function, args)
-    val evaluated = eval(function.body, extendedEnv)
-    return unwrapReturnValue(evaluated)
+    return when (fn) {
+        is Function -> {
+            val extendedEnv = extendFunctionEnv(fn, args)
+            val evaluated = eval(fn.body, extendedEnv)
+            return unwrapReturnValue(evaluated)
+        }
+        is Builtin -> fn.fn(args)
+        else -> Error("not a function: ${fn?.type()}")
+    }
 }
 
 fun extendFunctionEnv(fn: Function, args: List<Object?>): Environment {
@@ -242,5 +248,13 @@ fun evalBlockStatement(block: BlockStatement, env: Environment): Object? {
 }
 
 fun evalIdentifier(node: Identifier, env: Environment): Object? {
-    return env[node.value] ?: Error("identifier not found: ${node.value}")
+    env[node.value]?.let {
+        return it
+    }
+
+    builtins[node.value]?.let {
+        return it
+    }
+
+    return Error("identifier not found: ${node.value}")
 }

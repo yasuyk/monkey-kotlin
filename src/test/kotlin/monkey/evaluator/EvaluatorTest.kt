@@ -241,12 +241,32 @@ if (10 > 1) {
         assertThat(str.value).isEqualTo("Hello World!")
     }
 
+    @Test
+    fun builtinFunctions() {
+        val tests = arrayOf(
+		"""len("")""" to 0,
+		"""len("four")""" to 4,
+		"""len("hello world")""" to 11,
+		"""len(1)""" to "argument to `len` not supported, got INTEGER",
+		"""len("one", "two")""" to "wrong number of arguments. got=2, want=1"
+        )
+        for ((input, expected) in tests) {
+            val evaluated = testEval(input)
+            when(expected) {
+                is Int -> testIntegerObject(evaluated, expected.toLong())
+                is String -> {
+                    val err = evaluated as Error
+                    assertThat(err.message).isEqualTo(expected)
+                }
+            }
+        }
+    }
+
     private fun testEval(input: String): Object? {
         val p = Parser.newInstance(Lexer.newInstance(input)).parseProgram()
         val env = Environment()
         return eval(p, env)
     }
-
 
     private fun testIntegerObject(obj: Object?, expected: Long) {
         val result = obj as Integer

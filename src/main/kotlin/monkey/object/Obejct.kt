@@ -11,6 +11,7 @@ enum class ObjectType {
     ERROR,
     FUNCTION,
     STRING,
+    BUILTIN,
 }
 
 
@@ -65,5 +66,12 @@ class Function(val parameters: List<Identifier>,
 class MonkeyString(val value: String) : Object {
     override fun type() = ObjectType.STRING
     override fun inspect() = value
+}
+
+typealias BuiltinFunction = (args: List<Object?>) -> Object
+
+class Builtin(val fn: BuiltinFunction) : Object {
+    override fun type() = ObjectType.BUILTIN
+    override fun inspect() = "builtin function"
 }
 
