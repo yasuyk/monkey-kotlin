@@ -155,6 +155,7 @@ f(10);
                 "-true" to "unknown operator: -BOOLEAN",
                 "true + false;" to "unknown operator: BOOLEAN + BOOLEAN",
                 "5; true + false; 5" to "unknown operator: BOOLEAN + BOOLEAN",
+                "\"Hello\" - \"World\"" to "unknown operator: STRING - STRING",
                 "if (10 > 1) { true + false; }" to "unknown operator: BOOLEAN + BOOLEAN",
                 """
 if (10 > 1) {
@@ -227,6 +228,14 @@ if (10 > 1) {
     @Test
     fun stringLiteral() {
         val input = "\"Hello World!\""
+        val evaluated = testEval(input)
+        val str = evaluated as MonkeyString
+        assertThat(str.value).isEqualTo("Hello World!")
+    }
+
+    @Test
+    fun stringConcatenation() {
+        val input = "\"Hello\" + \" \" + \"World!\""
         val evaluated = testEval(input)
         val str = evaluated as MonkeyString
         assertThat(str.value).isEqualTo("Hello World!")

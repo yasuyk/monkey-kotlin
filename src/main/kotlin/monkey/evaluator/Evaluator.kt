@@ -129,10 +129,13 @@ fun evalMinusPrefixOperatorExpression(right: Object?): Object? {
 }
 
 fun evalInfixExpression(operator: String, left: Object?, right: Object?): Object? {
-    if (left?.type() == ObjectType.INTEGER && right?.type() == ObjectType.INTEGER) {
-        return evalIntegerInfixExpression(operator, left, right)
-    }
     return when {
+        left?.type() == ObjectType.INTEGER && right?.type() == ObjectType.INTEGER -> {
+            evalIntegerInfixExpression(operator, left, right)
+        }
+        left?.type() == ObjectType.STRING && right?.type() == ObjectType.STRING -> {
+            evalStringInfixExpression(operator, left, right)
+        }
         operator == "==" -> nativeBoolToBooleanObject(left == right)
         operator == "!=" -> nativeBoolToBooleanObject(left != right)
         left?.type() != right?.type() -> Error("type mismatch: ${left?.type()} $operator ${right?.type()}")
@@ -153,9 +156,19 @@ fun evalIntegerInfixExpression(operator: String, left: Object, right: Object): O
         "==" -> nativeBoolToBooleanObject(leftVal.value == rightVal.value)
         "!=" -> nativeBoolToBooleanObject(leftVal.value != rightVal.value)
         else -> Error("unknown operator: ${left.type()} $operator ${right.type()}")
-
     }
 }
+
+fun evalStringInfixExpression(operator: String, left: Object, right: Object): Object? {
+    if (operator != "+") {
+        return Error("unknown operator: ${left.type()} $operator ${right.type()}")
+    }
+
+    val leftVal = left as MonkeyString
+    val rightVal = right as MonkeyString
+    return MonkeyString(leftVal.value + rightVal.value)
+}
+
 
 fun evalIfExpression(ie: IfExpression, env: Environment): Object? {
     val condition = eval(ie.condition, env)
@@ -207,7 +220,7 @@ fun isTruthy(condition: Object?): kotlin.Boolean {
 }
 
 fun unwrapReturnValue(obj: Object?): Object? {
-    return when(obj) {
+    return when (obj) {
         is ReturnValue -> obj.value
         else -> obj
     }
