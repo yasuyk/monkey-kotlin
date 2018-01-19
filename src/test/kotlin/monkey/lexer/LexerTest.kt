@@ -14,6 +14,7 @@ import monkey.token.IDENT
 import monkey.token.IF
 import monkey.token.INT
 import monkey.token.LBRACE
+import monkey.token.LBRACKET
 import monkey.token.LET
 import monkey.token.LPAREN
 import monkey.token.LT
@@ -21,6 +22,7 @@ import monkey.token.MINUS
 import monkey.token.NOT_EQ
 import monkey.token.PLUS
 import monkey.token.RBRACE
+import monkey.token.RBRACKET
 import monkey.token.RETURN
 import monkey.token.RPAREN
 import monkey.token.SEMICOLON
@@ -60,6 +62,7 @@ if (5 < 10) {
 10 != 9;
 "foobar"
 "foo bar"
+[1, 2];
 """
 
         val tests = arrayOf(
@@ -138,6 +141,12 @@ if (5 < 10) {
             SEMICOLON to ";",
             STRING to "foobar",
             STRING to "foo bar",
+            LBRACKET to "[",
+            INT to "1",
+            COMMA to ",",
+            INT to "2",
+            RBRACKET to "]",
+            SEMICOLON to ";",
             EOF to ""
         )
 

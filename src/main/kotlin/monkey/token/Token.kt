@@ -30,6 +30,8 @@ const val LPAREN = "("
 const val RPAREN = ")"
 const val LBRACE = "{"
 const val RBRACE = "}"
+const val LBRACKET = "["
+const val RBRACKET = "]"
 
 // Keywords
 const val FUNCTION = "FUNCTION"

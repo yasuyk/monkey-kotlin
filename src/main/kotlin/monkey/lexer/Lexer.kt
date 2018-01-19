@@ -10,12 +10,14 @@ import monkey.token.GT
 import monkey.token.ILLEGAL
 import monkey.token.INT
 import monkey.token.LBRACE
+import monkey.token.LBRACKET
 import monkey.token.LPAREN
 import monkey.token.LT
 import monkey.token.MINUS
 import monkey.token.NOT_EQ
 import monkey.token.PLUS
 import monkey.token.RBRACE
+import monkey.token.RBRACKET
 import monkey.token.RPAREN
 import monkey.token.SEMICOLON
 import monkey.token.SLASH
@@ -70,6 +72,8 @@ class Lexer private constructor(private val input: String) {
             '}' -> newToken(RBRACE, ch)
             '(' -> newToken(LPAREN, ch)
             ')' -> newToken(RPAREN, ch)
+            '[' -> newToken(LBRACKET, ch)
+            ']' -> newToken(RBRACKET, ch)
             '"' -> Token(STRING, readString())
             0.toChar() -> Token(EOF, "")
             else -> when {
