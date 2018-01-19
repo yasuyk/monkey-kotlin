@@ -24,9 +24,10 @@ class ParserTest {
     @Test
     fun letStatements() {
         val tests = arrayOf(
-                Triple("let x = 5;", "x", 5),
-                Triple("let y = true;", "y", true),
-                Triple("let foobar = y;", "foobar", "y"))
+            Triple("let x = 5;", "x", 5),
+            Triple("let y = true;", "y", true),
+            Triple("let foobar = y;", "foobar", "y")
+        )
 
         for ((input, expectedIdentifier, expectedValue) in tests) {
             val l = Lexer.newInstance(input)
@@ -53,9 +54,10 @@ class ParserTest {
     @Test
     fun returnStatements() {
         val tests = arrayOf(
-                "return 5;" to 5,
-                "return true;" to true,
-                "return foobar;" to "foobar")
+            "return 5;" to 5,
+            "return true;" to true,
+            "return foobar;" to "foobar"
+        )
         for ((input, expected) in tests) {
             val l = Lexer.newInstance(input)
             val p = Parser.newInstance(l)
@@ -126,8 +128,8 @@ class ParserTest {
     @Test
     fun booleanExpression() {
         val prefixTests = arrayOf(
-                "true" to true,
-                "false" to false
+            "true" to true,
+            "false" to false
         )
 
         for (test in prefixTests) {
@@ -194,9 +196,9 @@ class ParserTest {
     @Test
     fun functionParameterParsing() {
         val tests = arrayOf(
-                "fn() {};" to arrayOf(),
-                "fn(x) {};" to arrayOf("x"),
-                "fn(x, y, z) {};" to arrayOf("x", "y", "z")
+            "fn() {};" to arrayOf(),
+            "fn(x) {};" to arrayOf("x"),
+            "fn(x, y, z) {};" to arrayOf("x", "y", "z")
         )
 
         for ((input, expectedParams) in tests) {
@@ -233,9 +235,9 @@ class ParserTest {
     @Test
     fun callExpressionParameterParsing() {
         val tests = arrayOf(
-                Triple("add();", "add", listOf()),
-                Triple("add(1);", "add", listOf("1")),
-                Triple("add(1, 2 * 3, 4 + 5);", "add", listOf("1", "(2 * 3)", "(4 + 5)"))
+            Triple("add();", "add", listOf()),
+            Triple("add(1);", "add", listOf("1")),
+            Triple("add(1, 2 * 3, 4 + 5);", "add", listOf("1", "(2 * 3)", "(4 + 5)"))
         )
 
         for ((input, expectdIdent, expectedArgs) in tests) {
@@ -256,12 +258,12 @@ class ParserTest {
     @Test
     fun parsingPrefixExpressions() {
         val prefixTests = arrayOf(
-                Triple("!5;", "!", 5L),
-                Triple("-15;", "-", 15L),
-                Triple("!foobar;", "!", "foobar"),
-                Triple("-foobar;", "-", "foobar"),
-                Triple("!true;", "!", true),
-                Triple("!false;", "!", false)
+            Triple("!5;", "!", 5L),
+            Triple("-15;", "-", 15L),
+            Triple("!foobar;", "!", "foobar"),
+            Triple("-foobar;", "-", "foobar"),
+            Triple("!true;", "!", true),
+            Triple("!false;", "!", false)
         )
 
         for (test in prefixTests) {
@@ -278,31 +280,33 @@ class ParserTest {
 
     @Test
     fun parsingInfixExpressions() {
-        data class TestData(val input: String,
-                            val left: Any,
-                            val operator: String,
-                            val right: Any)
+        data class TestData(
+            val input: String,
+            val left: Any,
+            val operator: String,
+            val right: Any
+        )
 
         val prefixTests = arrayOf(
-                TestData("5 + 5;", 5, "+", 5),
-                TestData("5 - 5;", 5, "-", 5),
-                TestData("5 * 5;", 5, "*", 5),
-                TestData("5 / 5;", 5, "/", 5),
-                TestData("5 > 5;", 5, ">", 5),
-                TestData("5 < 5;", 5, "<", 5),
-                TestData("5 == 5;", 5, "==", 5),
-                TestData("5 != 5;", 5, "!=", 5),
-                TestData("foobar + barfoo;", "foobar", "+", "barfoo"),
-                TestData("foobar - barfoo;", "foobar", "-", "barfoo"),
-                TestData("foobar * barfoo;", "foobar", "*", "barfoo"),
-                TestData("foobar / barfoo;", "foobar", "/", "barfoo"),
-                TestData("foobar > barfoo;", "foobar", ">", "barfoo"),
-                TestData("foobar < barfoo;", "foobar", "<", "barfoo"),
-                TestData("foobar == barfoo;", "foobar", "==", "barfoo"),
-                TestData("foobar != barfoo;", "foobar", "!=", "barfoo"),
-                TestData("true == true", true, "==", true),
-                TestData("true != false", true, "!=", false),
-                TestData("false == false", false, "==", false)
+            TestData("5 + 5;", 5, "+", 5),
+            TestData("5 - 5;", 5, "-", 5),
+            TestData("5 * 5;", 5, "*", 5),
+            TestData("5 / 5;", 5, "/", 5),
+            TestData("5 > 5;", 5, ">", 5),
+            TestData("5 < 5;", 5, "<", 5),
+            TestData("5 == 5;", 5, "==", 5),
+            TestData("5 != 5;", 5, "!=", 5),
+            TestData("foobar + barfoo;", "foobar", "+", "barfoo"),
+            TestData("foobar - barfoo;", "foobar", "-", "barfoo"),
+            TestData("foobar * barfoo;", "foobar", "*", "barfoo"),
+            TestData("foobar / barfoo;", "foobar", "/", "barfoo"),
+            TestData("foobar > barfoo;", "foobar", ">", "barfoo"),
+            TestData("foobar < barfoo;", "foobar", "<", "barfoo"),
+            TestData("foobar == barfoo;", "foobar", "==", "barfoo"),
+            TestData("foobar != barfoo;", "foobar", "!=", "barfoo"),
+            TestData("true == true", true, "==", true),
+            TestData("true != false", true, "!=", false),
+            TestData("false == false", false, "==", false)
         )
 
         for (test in prefixTests) {
@@ -321,31 +325,31 @@ class ParserTest {
     @Test
     fun operatorPrecedenceParsing() {
         val prefixTests = arrayOf(
-                "-a * b" to "((-a) * b)",
-                "!-a" to "(!(-a))",
-                "a + b + c" to "((a + b) + c)",
-                "a + b - c" to "((a + b) - c)",
-                "a * b * c" to "((a * b) * c)",
-                "a * b / c" to "((a * b) / c)",
-                "a + b / c" to "(a + (b / c))",
-                "a + b * c + d / e - f" to "(((a + (b * c)) + (d / e)) - f)",
-                "3 + 4; -5 * 5" to "(3 + 4)((-5) * 5)",
-                "5 > 4 == 3 < 4" to "((5 > 4) == (3 < 4))",
-                "5 < 4 != 3 > 4" to "((5 < 4) != (3 > 4))",
-                "3 + 4 * 5 == 3 * 1 + 4 * 5" to "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
-                "true" to "true",
-                "false" to "false",
-                "3 > 5 == false" to "((3 > 5) == false)",
-                "3 < 5 == true" to "((3 < 5) == true)",
-                "1 + (2 + 3) + 4" to "((1 + (2 + 3)) + 4)",
-                "(5 + 5) * 2" to "((5 + 5) * 2)",
-                "2 / (5 + 5)" to "(2 / (5 + 5))",
-                "(5 + 5) * 2 * (5 + 5)" to "(((5 + 5) * 2) * (5 + 5))",
-                "-(5 + 5)" to "(-(5 + 5))",
-                "!(true == true)" to "(!(true == true))",
-                "a + add(b * c) + d" to "((a + add((b * c))) + d)",
-                "add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))" to "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))",
-                "add(a + b + c * d / f + g)" to "add((((a + b) + ((c * d) / f)) + g))"
+            "-a * b" to "((-a) * b)",
+            "!-a" to "(!(-a))",
+            "a + b + c" to "((a + b) + c)",
+            "a + b - c" to "((a + b) - c)",
+            "a * b * c" to "((a * b) * c)",
+            "a * b / c" to "((a * b) / c)",
+            "a + b / c" to "(a + (b / c))",
+            "a + b * c + d / e - f" to "(((a + (b * c)) + (d / e)) - f)",
+            "3 + 4; -5 * 5" to "(3 + 4)((-5) * 5)",
+            "5 > 4 == 3 < 4" to "((5 > 4) == (3 < 4))",
+            "5 < 4 != 3 > 4" to "((5 < 4) != (3 > 4))",
+            "3 + 4 * 5 == 3 * 1 + 4 * 5" to "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
+            "true" to "true",
+            "false" to "false",
+            "3 > 5 == false" to "((3 > 5) == false)",
+            "3 < 5 == true" to "((3 < 5) == true)",
+            "1 + (2 + 3) + 4" to "((1 + (2 + 3)) + 4)",
+            "(5 + 5) * 2" to "((5 + 5) * 2)",
+            "2 / (5 + 5)" to "(2 / (5 + 5))",
+            "(5 + 5) * 2 * (5 + 5)" to "(((5 + 5) * 2) * (5 + 5))",
+            "-(5 + 5)" to "(-(5 + 5))",
+            "!(true == true)" to "(!(true == true))",
+            "a + add(b * c) + d" to "((a + add((b * c))) + d)",
+            "add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))" to "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))",
+            "add(a + b + c * d / f + g)" to "add((((a + b) + ((c * d) / f)) + g))"
         )
 
         for (test in prefixTests) {

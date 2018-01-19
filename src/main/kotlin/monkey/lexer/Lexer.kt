@@ -70,7 +70,7 @@ class Lexer private constructor(private val input: String) {
             '}' -> newToken(RBRACE, ch)
             '(' -> newToken(LPAREN, ch)
             ')' -> newToken(RPAREN, ch)
-            '"'-> Token(STRING, readString())
+            '"' -> Token(STRING, readString())
             0.toChar() -> Token(EOF, "")
             else -> when {
                 isLetter(ch) -> {
@@ -96,7 +96,7 @@ class Lexer private constructor(private val input: String) {
         readPosition += 1
     }
 
-    private fun peekChar() : Char {
+    private fun peekChar(): Char {
         return if (readPosition >= input.length) {
             0.toChar()
         } else {

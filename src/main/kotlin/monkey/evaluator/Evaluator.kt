@@ -239,7 +239,8 @@ fun evalBlockStatement(block: BlockStatement, env: Environment): Object? {
         result = eval(stmt, env)
         result?.let {
             if (it.type() == ObjectType.RETURN_VALUE ||
-                    it.type() == ObjectType.ERROR) {
+                it.type() == ObjectType.ERROR
+            ) {
                 return result
             }
         }

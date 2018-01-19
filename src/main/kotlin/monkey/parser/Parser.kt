@@ -68,15 +68,15 @@ enum class Precedence {
 }
 
 val precedences = mapOf(
-        EQ to Precedence.EQUALS,
-        NOT_EQ to Precedence.EQUALS,
-        LT to Precedence.LESS_GREATER,
-        GT to Precedence.LESS_GREATER,
-        PLUS to Precedence.SUM,
-        MINUS to Precedence.SUM,
-        SLASH to Precedence.PRODUCT,
-        ASTERISK to Precedence.PRODUCT,
-        LPAREN to Precedence.CALL
+    EQ to Precedence.EQUALS,
+    NOT_EQ to Precedence.EQUALS,
+    LT to Precedence.LESS_GREATER,
+    GT to Precedence.LESS_GREATER,
+    PLUS to Precedence.SUM,
+    MINUS to Precedence.SUM,
+    SLASH to Precedence.PRODUCT,
+    ASTERISK to Precedence.PRODUCT,
+    LPAREN to Precedence.CALL
 )
 
 class Parser private constructor(private val lexer: Lexer) {
@@ -301,7 +301,7 @@ class Parser private constructor(private val lexer: Lexer) {
         return InfixExpression(token, left, token.literal, right)
     }
 
-    fun parseCallExpression(function :Expression?): Expression? {
+    fun parseCallExpression(function: Expression?): Expression? {
         val tok = curToken
 
         val args = parseCallArguments() ?: return null
@@ -358,7 +358,7 @@ class Parser private constructor(private val lexer: Lexer) {
         }
         val block = parseBlockStatement()
 
-        var alt : BlockStatement? = null
+        var alt: BlockStatement? = null
         if (peekTokenIs(ELSE)) {
             nextToken()
             if (!expectPeek(LBRACE)) {

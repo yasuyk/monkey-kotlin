@@ -11,9 +11,12 @@ class AstTest {
     @Test
     fun testString() {
         val statements = arrayListOf<Statement>(
-                LetStatement(Token(LET, "let"),
-                        Identifier(Token(IDENT, "myVar"), "myVar"),
-                        Identifier(Token(IDENT, "anotherVar"), "anotherVar")))
+            LetStatement(
+                Token(LET, "let"),
+                Identifier(Token(IDENT, "myVar"), "myVar"),
+                Identifier(Token(IDENT, "anotherVar"), "anotherVar")
+            )
+        )
 
         assertThat(Program(statements).string()).isEqualTo("let myVar = anotherVar;")
     }

@@ -45,13 +45,13 @@ typealias TokenType = String
 data class Token(val type: TokenType, val literal: String)
 
 val keywords = mapOf(
-        "fn" to FUNCTION,
-        "let" to LET,
-        "true" to TRUE,
-        "false" to FALSE,
-        "if" to IF,
-        "else" to ELSE,
-        "return" to RETURN
+    "fn" to FUNCTION,
+    "let" to LET,
+    "true" to TRUE,
+    "false" to FALSE,
+    "if" to IF,
+    "else" to ELSE,
+    "return" to RETURN
 )
 
 fun String.lookupIdent(): TokenType = keywords[this] ?: IDENT

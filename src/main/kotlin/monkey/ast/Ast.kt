@@ -36,9 +36,11 @@ class Program(val statements: MutableList<Statement> = mutableListOf()) : Node {
 }
 
 
-class LetStatement(private val token: Token,
-                   val name: Identifier,
-                   val value: Expression) : Statement {
+class LetStatement(
+    private val token: Token,
+    val name: Identifier,
+    val value: Expression
+) : Statement {
 
     override fun tokenLiteral() = token.literal
 
@@ -55,8 +57,10 @@ class LetStatement(private val token: Token,
     }
 }
 
-class ReturnStatement(private val token: Token,
-                      val value: Expression) : Statement {
+class ReturnStatement(
+    private val token: Token,
+    val value: Expression
+) : Statement {
 
     override fun tokenLiteral() = token.literal
 
@@ -71,8 +75,10 @@ class ReturnStatement(private val token: Token,
     }
 }
 
-class ExpressionStatement(private val token: Token,
-                          val value: Expression?) : Statement {
+class ExpressionStatement(
+    private val token: Token,
+    val value: Expression?
+) : Statement {
     override fun tokenLiteral() = token.literal
     override fun statementNode() {}
 
@@ -87,8 +93,10 @@ class ExpressionStatement(private val token: Token,
     }
 }
 
-class BlockStatement(private val token: Token,
-                     val statements: List<Statement>) : Statement {
+class BlockStatement(
+    private val token: Token,
+    val statements: List<Statement>
+) : Statement {
     override fun tokenLiteral() = token.literal
     override fun statementNode() {}
 
@@ -122,9 +130,11 @@ class Bool(private val token: Token, val value: Boolean) : Expression {
     override fun string(): String = token.literal
 }
 
-class FunctionLiteral(private val token: Token,
-                      val parameters: List<Identifier>,
-                      val body: BlockStatement) : Expression {
+class FunctionLiteral(
+    private val token: Token,
+    val parameters: List<Identifier>,
+    val body: BlockStatement
+) : Expression {
     override fun tokenLiteral() = token.literal
     override fun expressionNode() {}
 
@@ -132,7 +142,7 @@ class FunctionLiteral(private val token: Token,
         return StringBuffer().also {
             it.append(tokenLiteral())
             it.append("(")
-            it.append(parameters.joinToString{ p -> p.string() })
+            it.append(parameters.joinToString { p -> p.string() })
             it.append(")")
             it.append(body.string())
         }.toString()
@@ -146,9 +156,11 @@ class StringLiteral(private val token: Token, val value: String) : Expression {
     override fun string(): String = token.literal
 }
 
-class PrefixExpression(private val token: Token,
-                       val operator: String,
-                       val right: Expression?) : Expression {
+class PrefixExpression(
+    private val token: Token,
+    val operator: String,
+    val right: Expression?
+) : Expression {
     override fun tokenLiteral() = token.literal
     override fun expressionNode() {}
 
@@ -164,10 +176,12 @@ class PrefixExpression(private val token: Token,
     }
 }
 
-class InfixExpression(private val token: Token,
-                      val left: Expression?,
-                      val operator: String,
-                      val right: Expression?) : Expression {
+class InfixExpression(
+    private val token: Token,
+    val left: Expression?,
+    val operator: String,
+    val right: Expression?
+) : Expression {
     override fun tokenLiteral() = token.literal
     override fun expressionNode() {}
 
@@ -186,10 +200,12 @@ class InfixExpression(private val token: Token,
     }
 }
 
-class IfExpression(private val token: Token,
-                   val condition: Expression,
-                   val consequence: BlockStatement,
-                   val alternative: BlockStatement? = null) : Expression {
+class IfExpression(
+    private val token: Token,
+    val condition: Expression,
+    val consequence: BlockStatement,
+    val alternative: BlockStatement? = null
+) : Expression {
     override fun tokenLiteral() = token.literal
     override fun expressionNode() {}
 
@@ -207,9 +223,11 @@ class IfExpression(private val token: Token,
     }
 }
 
-class CallExpression(private val token: Token,
-                     val function: Expression?,
-                     val arguments: List<Expression>) : Expression {
+class CallExpression(
+    private val token: Token,
+    val function: Expression?,
+    val arguments: List<Expression>
+) : Expression {
     override fun tokenLiteral() = token.literal
     override fun expressionNode() {}
 
@@ -219,7 +237,7 @@ class CallExpression(private val token: Token,
                 it.append(func.string())
             }
             it.append("(")
-            it.append(arguments.joinToString{ exp -> exp.string() })
+            it.append(arguments.joinToString { exp -> exp.string() })
             it.append(")")
         }.toString()
     }
