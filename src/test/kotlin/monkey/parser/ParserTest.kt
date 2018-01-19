@@ -1,5 +1,6 @@
 package monkey.parser
 
+import monkey.ast.ArrayLiteral
 import monkey.ast.Bool
 import monkey.ast.CallExpression
 import monkey.ast.Expression
@@ -359,6 +360,23 @@ class ParserTest {
 
             assertThat(program.string()).isEqualToIgnoringCase(test.second)
         }
+    }
+
+    @Test
+    fun parsingArrayLiterals() {
+        val input = "[1, 2 * 2, 3 + 3]"
+
+        val p = Parser.newInstance(Lexer.newInstance(input))
+        val program = p.parseProgram()
+        checkParserErrors(p)
+        assertThat(program.statements).hasSize(1)
+        val stmt = program.statements[0] as ExpressionStatement
+        val array = stmt.value as ArrayLiteral
+
+        assertThat(array.elements).hasSize(3)
+        testLiteralExpression(array.elements[0], 1)
+        testInfixExpression(array.elements[1], 2, "*", 2)
+        testInfixExpression(array.elements[2], 3, "+", 3)
     }
 
     private fun testLiteralExpression(exp: Expression?, expected: Any) {

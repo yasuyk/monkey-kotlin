@@ -156,6 +156,19 @@ class StringLiteral(private val token: Token, val value: String) : Expression {
     override fun string(): String = token.literal
 }
 
+class ArrayLiteral(private val token: Token, val elements: List<Expression>) : Expression {
+    override fun tokenLiteral() = token.literal
+    override fun expressionNode() {}
+
+    override fun string(): String {
+        return StringBuffer().apply {
+            append("[")
+            append(elements.joinToString { e -> e.string() })
+            append("]")
+        }.toString()
+    }
+}
+
 class PrefixExpression(
     private val token: Token,
     val operator: String,
