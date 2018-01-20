@@ -13,6 +13,7 @@ enum class ObjectType {
     STRING,
     BUILTIN,
     ARRAY,
+    HASH,
 }
 
 
@@ -23,14 +24,16 @@ interface Object {
 
 fun Object?.isError() = this?.type() == ObjectType.ERROR
 
-class Integer(val value: Long) : Object {
+class Integer(val value: Long) : Object, Hashable {
     override fun type() = ObjectType.INTEGER
     override fun inspect() = value.toString()
+    override fun hashKey() = HashKey(type(), value)
 }
 
-class Boolean(val value: kotlin.Boolean) : Object {
+class Boolean(val value: kotlin.Boolean) : Object, Hashable {
     override fun type() = ObjectType.BOOLEAN
     override fun inspect() = value.toString()
+    override fun hashKey() = HashKey(type(), if (value) 1 else 0)
 }
 
 class Null : Object {
@@ -66,9 +69,10 @@ class Function(
     }
 }
 
-class MonkeyString(val value: String) : Object {
+class MonkeyString(val value: String) : Object, Hashable {
     override fun type() = ObjectType.STRING
     override fun inspect() = value
+    override fun hashKey() = HashKey(type(), value.hashCode().toLong())
 }
 
 typealias BuiltinFunction = (args: List<Object?>) -> Object
@@ -88,3 +92,28 @@ class MonkeyArray(val elements: List<Object?>) : Object {
         }.toString()
     }
 }
+
+data class HashKey(val type: ObjectType, val value: Long)
+
+interface Hashable {
+    fun hashKey(): HashKey
+}
+
+data class HashPair(val key: Object, val value: Object)
+
+class Hash(val pairs: Map<HashKey, HashPair>) : Object {
+    override fun type() = ObjectType.HASH
+    override fun inspect(): String {
+        return StringBuffer().apply {
+            append("{")
+            append(
+                pairs.map { pair ->
+                    "${pair.key}: ${pair.value}"
+                }.joinToString()
+            )
+            append("}")
+        }.toString()
+    }
+}
+
+
