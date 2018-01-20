@@ -5,6 +5,7 @@ import monkey.`object`.Environment
 import monkey.`object`.Error
 import monkey.`object`.Function
 import monkey.`object`.Integer
+import monkey.`object`.MonkeyArray
 import monkey.`object`.MonkeyString
 import monkey.`object`.Object
 import monkey.lexer.Lexer
@@ -260,6 +261,18 @@ if (10 > 1) {
                 }
             }
         }
+    }
+
+    @Test
+    fun arrayLiterals() {
+        val input = "[1, 2 * 2, 3 + 3]"
+        val evaluated = testEval(input)
+        val result = evaluated as MonkeyArray
+        assertThat(result.elements).hasSize(3)
+        testIntegerObject(result.elements[0], 1)
+        testIntegerObject(result.elements[1], 4)
+        testIntegerObject(result.elements[2], 6)
+
     }
 
     private fun testEval(input: String): Object? {

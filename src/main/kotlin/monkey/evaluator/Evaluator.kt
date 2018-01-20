@@ -7,12 +7,14 @@ import monkey.`object`.Environment.Companion.newEnclosedEnvironment
 import monkey.`object`.Error
 import monkey.`object`.Function
 import monkey.`object`.Integer
+import monkey.`object`.MonkeyArray
 import monkey.`object`.MonkeyString
 import monkey.`object`.Null
 import monkey.`object`.Object
 import monkey.`object`.ObjectType
 import monkey.`object`.ReturnValue
 import monkey.`object`.isError
+import monkey.ast.ArrayLiteral
 import monkey.ast.BlockStatement
 import monkey.ast.Bool
 import monkey.ast.CallExpression
@@ -83,6 +85,14 @@ fun eval(node: Node?, env: Environment): Object? {
         is IntegerLiteral -> Integer(node.value)
         is StringLiteral -> MonkeyString(node.value)
         is FunctionLiteral -> Function(node.parameters, node.body, env)
+        is ArrayLiteral -> {
+            val elements = evalExpressions(node.elements, env)
+            return if (elements.size == 1 && elements[0].isError()) {
+                elements[0]
+            } else {
+                MonkeyArray(elements)
+            }
+        }
         is Bool -> nativeBoolToBooleanObject(node.value)
         else -> null
     }

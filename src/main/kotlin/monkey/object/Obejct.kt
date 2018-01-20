@@ -12,6 +12,7 @@ enum class ObjectType {
     FUNCTION,
     STRING,
     BUILTIN,
+    ARRAY,
 }
 
 
@@ -77,3 +78,13 @@ class Builtin(val fn: BuiltinFunction) : Object {
     override fun inspect() = "builtin function"
 }
 
+class MonkeyArray(val elements: List<Object?>) : Object {
+    override fun type() = ObjectType.ARRAY
+    override fun inspect(): String {
+        return StringBuffer().apply {
+            append("[")
+            append(elements.joinToString { e -> e?.inspect() ?: "" })
+            append("]")
+        }.toString()
+    }
+}
