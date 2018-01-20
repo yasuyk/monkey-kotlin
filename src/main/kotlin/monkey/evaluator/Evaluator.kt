@@ -23,6 +23,7 @@ import monkey.ast.ExpressionStatement
 import monkey.ast.FunctionLiteral
 import monkey.ast.Identifier
 import monkey.ast.IfExpression
+import monkey.ast.IndexExpression
 import monkey.ast.InfixExpression
 import monkey.ast.IntegerLiteral
 import monkey.ast.LetStatement
@@ -80,6 +81,17 @@ fun eval(node: Node?, env: Environment): Object? {
                 return args[0]
             }
             return applyFunction(function, args)
+        }
+        is IndexExpression -> {
+            val left = eval(node.left, env)
+            if (left.isError()) {
+                return left
+            }
+            val right = eval(node.index, env)
+            if (right.isError()) {
+                return right
+            }
+            evalIndexExpression(left, right)
         }
         is Identifier -> evalIdentifier(node, env)
         is IntegerLiteral -> Integer(node.value)
@@ -268,4 +280,24 @@ fun evalIdentifier(node: Identifier, env: Environment): Object? {
     }
 
     return Error("identifier not found: ${node.value}")
+}
+
+fun evalIndexExpression(left: Object?, index: Object?): Object? {
+    return when {
+        left?.type() == ObjectType.ARRAY && index?.type() == ObjectType.INTEGER -> {
+            evalArrayIndexExpression(left, index)
+        }
+        else -> Error("index operator not supported%s: ${left?.type()}")
+    }
+}
+
+fun evalArrayIndexExpression(array: Object, index: Object): Object? {
+    val arrayObject = array as MonkeyArray
+    val idx = (index as Integer).value
+    val max = arrayObject.elements.size - 1
+    if (idx < 0 ||max < idx) {
+        return NULL
+    }
+
+    return arrayObject.elements[idx.toInt()]
 }

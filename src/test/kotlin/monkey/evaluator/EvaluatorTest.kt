@@ -272,7 +272,32 @@ if (10 > 1) {
         testIntegerObject(result.elements[0], 1)
         testIntegerObject(result.elements[1], 4)
         testIntegerObject(result.elements[2], 6)
+    }
 
+    @Test
+    fun arrayIndexExpressions() {
+        val tests = arrayOf(
+            "[1, 2, 3][0]" to 1,
+            "[1, 2, 3][1]" to 2,
+            "[1, 2, 3][2]" to 3,
+            "let i = 0; [1][i];" to 1,
+            "[1, 2, 3][1 + 1];" to 3,
+            "let myArray = [1, 2, 3]; myArray[2];" to 3,
+            "let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];" to 6,
+            "let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]" to 2,
+            "[1, 2, 3][3]" to NULL,
+            "[1, 2, 3][-1]" to NULL
+        )
+
+        for ((input, expected) in tests) {
+            val evaluated = testEval(input)
+            val integer = evaluated as? Integer
+            if (integer != null && expected is Int) {
+                testIntegerObject(integer, expected.toLong())
+            } else {
+                 testNullObject(evaluated)
+            }
+        }
     }
 
     private fun testEval(input: String): Object? {
