@@ -76,5 +76,11 @@ val builtins = mapOf(
         val new = array.elements.toMutableList()
         new.add(args[1])
         MonkeyArray(new)
+    }),
+    "puts" to Builtin({ args ->
+        for (arg in args) {
+            println(arg?.inspect())
+        }
+        NULL
     })
 )
