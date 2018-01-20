@@ -6,6 +6,7 @@ import monkey.ast.CallExpression
 import monkey.ast.Expression
 import monkey.ast.ExpressionStatement
 import monkey.ast.FunctionLiteral
+import monkey.ast.HashLiteral
 import monkey.ast.Identifier
 import monkey.ast.IfExpression
 import monkey.ast.IndexExpression
@@ -397,6 +398,65 @@ class ParserTest {
         testInfixExpression(indexExp.index, 1, "+", 1)
     }
 
+    @Test
+    fun parsingHashLiteralsStringKeys() {
+        val input = """{"one": 1, "two": 2, "three": 3}"""
+
+        val l = Lexer.newInstance(input)
+        val p = Parser.newInstance(l)
+        val program = p.parseProgram()
+        checkParserErrors(p)
+
+        assertThat(program.statements).hasSize(1)
+        val stmt = program.statements[0] as ExpressionStatement
+        val hash = stmt.value as HashLiteral
+        assertThat(hash.pairs).hasSize(3)
+        val expected = mapOf("one" to 1L, "two" to 2L, "three" to 3L)
+
+        for ((key, value) in hash.pairs) {
+            val literal = key as StringLiteral
+            testIntegerLiteral(value, expected[literal.value])
+        }
+    }
+
+    @Test
+    fun parsingEmptyHashLiteral() {
+        val input = "{}"
+
+        val l = Lexer.newInstance(input)
+        val p = Parser.newInstance(l)
+        val program = p.parseProgram()
+        checkParserErrors(p)
+
+        assertThat(program.statements).hasSize(1)
+        val stmt = program.statements[0] as ExpressionStatement
+        val hash = stmt.value as HashLiteral
+        assertThat(hash.pairs).hasSize(0)
+    }
+
+    @Test
+    fun parsingHashLiteralsWithExpressions() {
+        val input = """{"one": 0 + 1, "two": 10 - 8, "three": 15 / 5}"""
+
+        val l = Lexer.newInstance(input)
+        val p = Parser.newInstance(l)
+        val program = p.parseProgram()
+        checkParserErrors(p)
+
+        assertThat(program.statements).hasSize(1)
+        val stmt = program.statements[0] as ExpressionStatement
+        val hash = stmt.value as HashLiteral
+        assertThat(hash.pairs).hasSize(3)
+        val tests = mapOf<String, (Expression) -> Unit>(
+            "one" to { e -> testInfixExpression(e, 0, "+", 1) },
+            "two" to { e -> testInfixExpression(e, 10, "-", 8) },
+            "three" to { e -> testInfixExpression(e, 15, "/", 5) })
+
+        for ((key, value) in hash.pairs) {
+            val literal = key as StringLiteral
+            tests[literal.value]!!.invoke(value)
+        }
+    }
 
     private fun testLiteralExpression(exp: Expression?, expected: Any) {
         when (expected) {
@@ -415,7 +475,7 @@ class ParserTest {
         testLiteralExpression(opExp.right, right)
     }
 
-    private fun testIntegerLiteral(right: Expression?, value: Any) {
+    private fun testIntegerLiteral(right: Expression?, value: Any?) {
         val int = right as IntegerLiteral
         assertThat(int.value).isEqualTo(value)
         assertThat(int.tokenLiteral()).isEqualTo(value.toString())

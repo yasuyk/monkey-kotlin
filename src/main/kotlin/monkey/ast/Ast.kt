@@ -169,6 +169,21 @@ class ArrayLiteral(private val token: Token, val elements: List<Expression>) : E
     }
 }
 
+class HashLiteral(private val token: Token, val pairs: Map<Expression, Expression>) : Expression {
+    override fun tokenLiteral() = token.literal
+    override fun expressionNode() {}
+
+    override fun string(): String {
+        return StringBuffer().apply {
+            append("{")
+            append(pairs.map { (k, v) ->
+                "${k.string()}:${v.string()}"
+            }.joinToString())
+            append("}")
+        }.toString()
+    }
+}
+
 class PrefixExpression(
     private val token: Token,
     val operator: String,
@@ -274,4 +289,3 @@ class IndexExpression(
         }.toString()
     }
 }
-

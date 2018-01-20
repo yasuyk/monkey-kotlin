@@ -7,6 +7,7 @@ import monkey.ast.CallExpression
 import monkey.ast.Expression
 import monkey.ast.ExpressionStatement
 import monkey.ast.FunctionLiteral
+import monkey.ast.HashLiteral
 import monkey.ast.Identifier
 import monkey.ast.IfExpression
 import monkey.ast.IndexExpression
@@ -22,6 +23,7 @@ import monkey.lexer.Lexer
 import monkey.token.ASSIGN
 import monkey.token.ASTERISK
 import monkey.token.BANG
+import monkey.token.COLON
 import monkey.token.COMMA
 import monkey.token.ELSE
 import monkey.token.EOF
@@ -108,6 +110,7 @@ class Parser private constructor(private val lexer: Lexer) {
                 registerPrefix(FALSE, ::parseBool)
                 registerPrefix(FUNCTION, ::parseFunctionLiteral)
                 registerPrefix(LBRACKET, ::parseArrayLiteral)
+                registerPrefix(LBRACE, ::parseHashLiteral)
                 registerPrefix(BANG, ::parsePrefixExpression)
                 registerPrefix(MINUS, ::parsePrefixExpression)
                 registerPrefix(LPAREN, ::parseGroupedExpression)
@@ -277,6 +280,31 @@ class Parser private constructor(private val lexer: Lexer) {
         val token = curToken
         val elements = parseExpressionList(RBRACKET) ?: return null
         return ArrayLiteral(token, elements)
+    }
+
+    fun parseHashLiteral(): Expression? {
+        val token = curToken
+        val pairs = mutableMapOf<Expression, Expression>()
+
+        while (!peekTokenIs(RBRACE)) {
+            nextToken()
+            val key = parseExpression(Precedence.LOWEST) ?: return null
+            if (!expectPeek(COLON)) {
+                return null
+            }
+            nextToken()
+            val value = parseExpression(Precedence.LOWEST) ?: return null
+            pairs[key] = value
+            if (!peekTokenIs(RBRACE) && !expectPeek(COMMA)) {
+                return null
+            }
+        }
+
+        if (!expectPeek(RBRACE)) {
+            return null
+        }
+
+        return HashLiteral(token, pairs)
     }
 
     private fun parseExpressionList(end: TokenType): List<Expression>? {
