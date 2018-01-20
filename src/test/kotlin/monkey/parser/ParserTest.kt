@@ -8,6 +8,7 @@ import monkey.ast.ExpressionStatement
 import monkey.ast.FunctionLiteral
 import monkey.ast.Identifier
 import monkey.ast.IfExpression
+import monkey.ast.IndexExpression
 import monkey.ast.InfixExpression
 import monkey.ast.IntegerLiteral
 import monkey.ast.LetStatement
@@ -350,15 +351,16 @@ class ParserTest {
             "!(true == true)" to "(!(true == true))",
             "a + add(b * c) + d" to "((a + add((b * c))) + d)",
             "add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))" to "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))",
-            "add(a + b + c * d / f + g)" to "add((((a + b) + ((c * d) / f)) + g))"
+            "add(a + b + c * d / f + g)" to "add((((a + b) + ((c * d) / f)) + g))",
+            "a * [1, 2, 3, 4][b * c] * d" to "((a * ([1, 2, 3, 4][(b * c)])) * d)",
+            "add(a * b[2], b[1], 2 * [1, 2][1])" to "add((a * (b[2])), (b[1]), (2 * ([1, 2][1])))"
         )
 
         for (test in prefixTests) {
             val p = Parser.newInstance(Lexer.newInstance(test.first))
             val program = p.parseProgram()
             checkParserErrors(p)
-
-            assertThat(program.string()).isEqualToIgnoringCase(test.second)
+            assertThat(program.string()).isEqualTo(test.second)
         }
     }
 
@@ -378,6 +380,23 @@ class ParserTest {
         testInfixExpression(array.elements[1], 2, "*", 2)
         testInfixExpression(array.elements[2], 3, "+", 3)
     }
+
+    @Test
+    fun parsingIndexExpression() {
+        val input = "myArray[1 + 1]"
+
+        val l = Lexer.newInstance(input)
+        val p = Parser.newInstance(l)
+        val program = p.parseProgram()
+        checkParserErrors(p)
+
+        assertThat(program.statements).hasSize(1)
+        val stmt = program.statements[0] as ExpressionStatement
+        val indexExp = stmt.value as IndexExpression
+        testIdentifier(indexExp.left, "myArray")
+        testInfixExpression(indexExp.index, 1, "+", 1)
+    }
+
 
     private fun testLiteralExpression(exp: Expression?, expected: Any) {
         when (expected) {

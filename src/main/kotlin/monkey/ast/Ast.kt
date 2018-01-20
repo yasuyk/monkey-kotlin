@@ -256,3 +256,22 @@ class CallExpression(
     }
 }
 
+class IndexExpression(
+    private val token: Token,
+    val left: Expression?,
+    val index: Expression
+) : Expression {
+    override fun tokenLiteral() = token.literal
+    override fun expressionNode() {}
+
+    override fun string(): String {
+        return StringBuffer().apply {
+            append("(")
+            append(left?.string())
+            append("[")
+            append(index.string())
+            append("])")
+        }.toString()
+    }
+}
+

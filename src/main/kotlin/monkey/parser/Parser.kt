@@ -9,6 +9,7 @@ import monkey.ast.ExpressionStatement
 import monkey.ast.FunctionLiteral
 import monkey.ast.Identifier
 import monkey.ast.IfExpression
+import monkey.ast.IndexExpression
 import monkey.ast.InfixExpression
 import monkey.ast.IntegerLiteral
 import monkey.ast.LetStatement
@@ -67,7 +68,8 @@ enum class Precedence {
     // -X or !X
     PREFIX,
     // myFunction(X)
-    CALL
+    CALL,
+    INDEX
 }
 
 val precedences = mapOf(
@@ -79,7 +81,8 @@ val precedences = mapOf(
     MINUS to Precedence.SUM,
     SLASH to Precedence.PRODUCT,
     ASTERISK to Precedence.PRODUCT,
-    LPAREN to Precedence.CALL
+    LPAREN to Precedence.CALL,
+    LBRACKET to Precedence.INDEX
 )
 
 class Parser private constructor(private val lexer: Lexer) {
@@ -114,6 +117,7 @@ class Parser private constructor(private val lexer: Lexer) {
                     registerInfix(infix, ::parseInfixExpression)
                 }
                 registerInfix(LPAREN, ::parseCallExpression)
+                registerInfix(LBRACKET, ::parseIndexExpression)
             }
         }
     }
@@ -377,6 +381,16 @@ class Parser private constructor(private val lexer: Lexer) {
         }
 
         return IfExpression(ifToken, exp, block, alt)
+    }
+
+    private fun parseIndexExpression(left: Expression?): Expression? {
+        val token = curToken
+        nextToken()
+        val index = parseExpression(Precedence.LOWEST) ?: return null
+        if (!expectPeek(RBRACKET)) {
+            return null
+        }
+        return IndexExpression(token, left, index)
     }
 
     private fun curTokenIs(t: TokenType): Boolean = curToken.type == t
