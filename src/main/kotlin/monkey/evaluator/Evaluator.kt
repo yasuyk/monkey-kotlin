@@ -291,7 +291,10 @@ fun evalIndexExpression(left: Object?, index: Object?): Object? {
         left?.type() == ObjectType.ARRAY && index?.type() == ObjectType.INTEGER -> {
             evalArrayIndexExpression(left, index)
         }
-        else -> Error("index operator not supported%s: ${left?.type()}")
+        left?.type() == ObjectType.HASH -> {
+            evalHashIndexExpression(left, index)
+        }
+        else -> Error("index operator not supported: ${left?.type()}")
     }
 }
 
@@ -305,6 +308,14 @@ fun evalArrayIndexExpression(array: Object, index: Object): Object? {
 
     return arrayObject.elements[idx.toInt()]
 }
+
+fun evalHashIndexExpression(hash: Object, index: Object?): Object? {
+    val hashObject = hash as Hash
+    val key = index as? Hashable ?: return Error("unusable as hash key: ${index?.type()}")
+    val pair = hashObject.pairs[key.hashKey()] ?: return NULL
+    return pair.value
+}
+
 
 fun evalHashLiteral(node: HashLiteral, env: Environment): Object? {
     val pairs = mutableMapOf<HashKey, HashPair>()

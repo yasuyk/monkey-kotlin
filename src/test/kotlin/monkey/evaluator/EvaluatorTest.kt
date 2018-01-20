@@ -168,7 +168,9 @@ if (10 > 1) {
   return 1;
 }
 """ to "unknown operator: BOOLEAN + BOOLEAN",
-            "foobar" to "identifier not found: foobar"
+            "foobar" to "identifier not found: foobar",
+            """{"name": "Monkey"}[fn(x) { x }];""" to "unusable as hash key: FUNCTION",
+            "999[1]" to "index operator not supported: INTEGER"
         )
         for ((input, expected) in tests) {
             val evaluated = testEval(input)
@@ -331,6 +333,29 @@ if (10 > 1) {
             testIntegerObject(pair?.value, expectedValue.toLong())
         }
 
+    }
+
+    @Test
+    fun hashIndexExpressions() {
+        val tests = arrayOf(
+            """{"foo": 5}["foo"]""" to 5,
+            """{"foo": 5}["bar"]""" to null,
+            """let key = "foo"; {"foo": 5}[key]""" to 5,
+            """{}["foo"]""" to null,
+            """{5: 5}[5]""" to 5,
+            """{true: 5}[true]""" to 5,
+            """{false: 5}[false]""" to 5
+        )
+
+        for ((input, expected) in tests) {
+            val evaluated = testEval(input)
+            val integer = evaluated as? Integer
+            if (integer != null && expected is Int) {
+                testIntegerObject(integer, expected.toLong())
+            } else {
+                testNullObject(evaluated)
+            }
+        }
     }
 
     companion object {
