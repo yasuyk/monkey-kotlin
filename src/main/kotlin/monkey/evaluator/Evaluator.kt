@@ -6,6 +6,10 @@ import monkey.`object`.Environment
 import monkey.`object`.Environment.Companion.newEnclosedEnvironment
 import monkey.`object`.Error
 import monkey.`object`.Function
+import monkey.`object`.Hash
+import monkey.`object`.HashKey
+import monkey.`object`.HashPair
+import monkey.`object`.Hashable
 import monkey.`object`.Integer
 import monkey.`object`.MonkeyArray
 import monkey.`object`.MonkeyString
@@ -21,6 +25,7 @@ import monkey.ast.CallExpression
 import monkey.ast.Expression
 import monkey.ast.ExpressionStatement
 import monkey.ast.FunctionLiteral
+import monkey.ast.HashLiteral
 import monkey.ast.Identifier
 import monkey.ast.IfExpression
 import monkey.ast.IndexExpression
@@ -105,11 +110,11 @@ fun eval(node: Node?, env: Environment): Object? {
                 MonkeyArray(elements)
             }
         }
+        is HashLiteral -> evalHashLiteral(node, env)
         is Bool -> nativeBoolToBooleanObject(node.value)
         else -> null
     }
 }
-
 
 private fun evalProgram(program: Program, env: Environment): Object? {
     var result: Object? = null
@@ -254,7 +259,6 @@ fun unwrapReturnValue(obj: Object?): Object? {
     }
 }
 
-
 fun evalBlockStatement(block: BlockStatement, env: Environment): Object? {
     var result: Object? = null
     for (stmt in block.statements) {
@@ -301,3 +305,30 @@ fun evalArrayIndexExpression(array: Object, index: Object): Object? {
 
     return arrayObject.elements[idx.toInt()]
 }
+
+fun evalHashLiteral(node: HashLiteral, env: Environment): Object? {
+    val pairs = mutableMapOf<HashKey, HashPair>()
+
+    for ((keyNode, valueNode) in node.pairs) {
+        val key = eval(keyNode, env)
+        if (key.isError()) {
+            return key
+        }
+
+        val hashKey = key as? Hashable ?: return Error("unusable as hash key: ${key?.type()}")
+
+        val value = eval(valueNode, env)
+        if (value.isError()) {
+            return value
+        }
+        if (value == null) {
+            return Error("value is null")
+        }
+
+        val hashed = hashKey.hashKey()
+        pairs[hashed] = HashPair(key, value)
+    }
+
+    return Hash(pairs)
+}
+

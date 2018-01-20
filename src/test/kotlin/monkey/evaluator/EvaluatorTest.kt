@@ -4,6 +4,7 @@ import monkey.`object`.Boolean
 import monkey.`object`.Environment
 import monkey.`object`.Error
 import monkey.`object`.Function
+import monkey.`object`.Hash
 import monkey.`object`.Integer
 import monkey.`object`.MonkeyArray
 import monkey.`object`.MonkeyString
@@ -298,6 +299,38 @@ if (10 > 1) {
                 testNullObject(evaluated)
             }
         }
+    }
+
+    @Test
+    fun hashLiterals() {
+        val input = """let two = "two";
+{
+    "one": 10 - 9,
+    two: 1 + 1,
+    "thr" + "ee": 6 / 2,
+    4: 4,
+    true: 5,
+    false: 6
+}
+"""
+        val evaluated = testEval(input)
+        val result = evaluated as Hash
+        val expected = mapOf(
+            MonkeyString("one").hashKey() to 1,
+            MonkeyString("two").hashKey() to 2,
+            MonkeyString("three").hashKey() to 3,
+            Integer(4).hashKey() to 4,
+            TRUE.hashKey() to 5,
+            FALSE.hashKey() to 6
+        )
+
+        assertThat(result.pairs).hasSize(expected.size)
+
+        for ((expectedKey, expectedValue) in expected) {
+            val pair = result.pairs[expectedKey]
+            testIntegerObject(pair?.value, expectedValue.toLong())
+        }
+
     }
 
     companion object {
