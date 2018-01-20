@@ -2,6 +2,9 @@
 
 An interpreter for the Monkey programming language written in Kotlin
 
+[![Build Status](https://travis-ci.org/yasuyk/monkey-kotlin.svg?branch=master)](https://travis-ci.org/yasuyk/monkey-kotlin)
+[![codecov](https://codecov.io/gh/yasuyk/monkey-kotlin/branch/master/graph/badge.svg)](https://codecov.io/gh/yasuyk/monkey-kotlin)
+
 ## What’s Monkey?
 
 Monkey has a C-like syntax, supports **variable bindings**, **prefix** and **infix operators**, has **first-class** and **higher-order functions**, can handle **closures** with ease and has **integers**, **booleans**, **arrays** and **hashes** built-in.
