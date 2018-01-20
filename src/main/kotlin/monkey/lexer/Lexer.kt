@@ -3,6 +3,7 @@ package monkey.lexer
 import monkey.token.ASSIGN
 import monkey.token.ASTERISK
 import monkey.token.BANG
+import monkey.token.COLON
 import monkey.token.COMMA
 import monkey.token.EOF
 import monkey.token.EQ
@@ -68,6 +69,7 @@ class Lexer private constructor(private val input: String) {
             '>' -> newToken(GT, ch)
             ';' -> newToken(SEMICOLON, ch)
             ',' -> newToken(COMMA, ch)
+            ':' -> newToken(COLON, ch)
             '{' -> newToken(LBRACE, ch)
             '}' -> newToken(RBRACE, ch)
             '(' -> newToken(LPAREN, ch)

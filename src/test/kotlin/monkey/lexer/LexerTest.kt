@@ -3,6 +3,7 @@ package monkey.lexer
 import monkey.token.ASSIGN
 import monkey.token.ASTERISK
 import monkey.token.BANG
+import monkey.token.COLON
 import monkey.token.COMMA
 import monkey.token.ELSE
 import monkey.token.EOF
@@ -63,6 +64,7 @@ if (5 < 10) {
 "foobar"
 "foo bar"
 [1, 2];
+{"foo": "bar"}
 """
 
         val tests = arrayOf(
@@ -147,6 +149,11 @@ if (5 < 10) {
             INT to "2",
             RBRACKET to "]",
             SEMICOLON to ";",
+            LBRACE to "{",
+            STRING to "foo",
+            COLON to ":",
+            STRING to "bar",
+            RBRACE to "}",
             EOF to ""
         )
 
