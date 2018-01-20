@@ -72,9 +72,6 @@ val builtins = mapOf(
         }
 
         val array = args[0] as MonkeyArray
-        if (array.elements.isEmpty()) {
-            return@Builtin NULL
-        }
 
         val new = array.elements.toMutableList()
         new.add(args[1])

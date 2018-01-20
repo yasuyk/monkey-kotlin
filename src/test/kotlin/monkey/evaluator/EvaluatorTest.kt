@@ -295,21 +295,24 @@ if (10 > 1) {
             if (integer != null && expected is Int) {
                 testIntegerObject(integer, expected.toLong())
             } else {
-                 testNullObject(evaluated)
+                testNullObject(evaluated)
             }
         }
     }
 
-    private fun testEval(input: String): Object? {
-        val p = Parser.newInstance(Lexer.newInstance(input)).parseProgram()
-        val env = Environment()
-        return eval(p, env)
+    companion object {
+        fun testEval(input: String): Object? {
+            val p = Parser.newInstance(Lexer.newInstance(input)).parseProgram()
+            val env = Environment()
+            return eval(p, env)
+        }
+
+        fun testIntegerObject(obj: Object?, expected: Long) {
+            val result = obj as Integer
+            assertThat(result.value).isEqualTo(expected)
+        }
     }
 
-    private fun testIntegerObject(obj: Object?, expected: Long) {
-        val result = obj as Integer
-        assertThat(result.value).isEqualTo(expected)
-    }
 
     private fun testBooleanObject(obj: Object?, expected: kotlin.Boolean) {
         val result = obj as Boolean
